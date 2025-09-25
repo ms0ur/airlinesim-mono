@@ -1,0 +1,28 @@
+{
+  "name": "@airlinesim/db",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client/db.ts",
+    "./schema": "./src/schema/index.ts"
+  },
+  "scripts": {
+    "generate": "drizzle-kit generate --config ../../drizzle.config.cjs",
+    "migrate": "drizzle-kit migrate --config ../../drizzle.config.cjs",
+    "studio": "drizzle-kit studio --config ../../drizzle.config.cjs",
+    "seed": "bun run src/seeds/seed.ts"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.5",
+    "drizzle-kit": "^0.31.4"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.44.5",
+    "pg": "^8.16.3",
+    "zod": "^4.1.11",
+    "dotenv": "^17.2.2"
+  }
+}

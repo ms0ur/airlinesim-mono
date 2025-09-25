@@ -6,7 +6,15 @@
     "dev": "nitro dev --port 4000"
   },
   "devDependencies": {
+    "@airlinesim/shared": "workspace:*",
+    "drizzle-kit": "^0.31.4",
     "h3": "^1.15.4",
     "nitropack": "^2.12.4"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.44.5",
+    "pg": "^8.16.3",
+    "zod": "^4.1.11",
+    "dotenv": "^17.2.2"
   }
 }

@@ -29,7 +29,8 @@
     "types": ["bun-types"],
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["packages/shared/src/*"]
+      "@airlinesim/shared": ["packages/shared/src/index.ts"],
+      "@airlinesim/shared/*": ["packages/shared/src/*"]
     }
   }
 }
