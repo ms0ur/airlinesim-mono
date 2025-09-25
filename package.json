@@ -1,0 +1,25 @@
+{
+  "name": "airlinesim",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "packageManager": "bun@1.2.20",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "turbo run clean && rm -rf node_modules .turbo"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "turbo": "^2.5.8"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
