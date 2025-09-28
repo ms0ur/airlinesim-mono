@@ -76,6 +76,7 @@ CREATE TABLE "flights" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+ALTER TABLE "airlines" ADD CONSTRAINT "airlines_base_airport_id_airports_id_fk" FOREIGN KEY ("base_airport_id") REFERENCES "public"."airports"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "aircraft" ADD CONSTRAINT "aircraft_airline_id_airlines_id_fk" FOREIGN KEY ("airline_id") REFERENCES "public"."airlines"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "aircraft" ADD CONSTRAINT "aircraft_type_id_aircraft_types_id_fk" FOREIGN KEY ("type_id") REFERENCES "public"."aircraft_types"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "routes" ADD CONSTRAINT "routes_airline_id_airlines_id_fk" FOREIGN KEY ("airline_id") REFERENCES "public"."airlines"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

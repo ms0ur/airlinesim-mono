@@ -1,6 +1,6 @@
 {
-  "id": "8f380f36-1c9b-4e79-a09c-4c5a50db029f",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "50ac63f7-8b79-4bfc-8462-534cd4660645",
+  "prevId": "8f380f36-1c9b-4e79-a09c-4c5a50db029f",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -114,7 +114,7 @@
           "name": "icao",
           "type": "varchar(4)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -134,6 +134,18 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "lat": {
+          "name": "lat",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lng": {
+          "name": "lng",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
