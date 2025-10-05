@@ -1,4 +1,8 @@
 import { defineNitroConfig } from "nitropack/config"
+import { config } from 'dotenv'
+import { resolve } from 'node:path'
+
+config({ path: resolve(__dirname, '../../.env') })
 
 // https://nitro.build/config
 export default defineNitroConfig({

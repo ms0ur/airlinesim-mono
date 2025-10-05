@@ -11,7 +11,6 @@ const AirportId = z.uuid();
 const pickDefined = <T extends Record<string, unknown>>(obj: T) =>
     Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as Partial<T>;
 
-/** Приводим createdAt к строке (если пришёл Date) */
 const toAirportPublic = (row: Partial<AirportRow>) =>
     AirportPublic.parse({
         ...row,
