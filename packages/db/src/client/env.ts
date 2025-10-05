@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 const Env = z.object({
-    DATABASE_URL: z.string().url(),
+    DATABASE_URL: z.url().optional(),
 });
 
 export const env = Env.parse({
