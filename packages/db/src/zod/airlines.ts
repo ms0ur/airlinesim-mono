@@ -18,6 +18,7 @@ export const AirlinePublic = z.object({
 });
 
 export const AirlineUpdate = z.object({
+    id: UUID,
     iata: z.string().length(2).optional().transform(s => s?.toUpperCase()).pipe(IATA2.optional()),
     icao: z.string().length(3).optional().transform(s => s?.toUpperCase()).pipe(ICAO3.optional()),
     name: z.string().min(2).max(120).trim().optional(),

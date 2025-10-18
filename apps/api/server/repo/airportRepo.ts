@@ -113,23 +113,27 @@ export const airportRepo = {
     },
 
     findById: async (id: string) => {
-        AirportId.parse(id);
-        const rows = await db
-            .select({
-                id: schema.airports.id,
-                iata: schema.airports.iata,
-                icao: schema.airports.icao,
-                name: schema.airports.name,
-                lat: schema.airports.lat,
-                lon: schema.airports.lon,
-                timezone: schema.airports.timezone,
-                createdAt: schema.airports.createdAt,
-            })
-            .from(schema.airports)
-            .where(eq(schema.airports.id, id))
-            .limit(1);
+        try {
+            AirportId.parse(id);
+            const rows = await db
+                .select({
+                    id: schema.airports.id,
+                    iata: schema.airports.iata,
+                    icao: schema.airports.icao,
+                    name: schema.airports.name,
+                    lat: schema.airports.lat,
+                    lon: schema.airports.lon,
+                    timezone: schema.airports.timezone,
+                    createdAt: schema.airports.createdAt,
+                })
+                .from(schema.airports)
+                .where(eq(schema.airports.id, id))
+                .limit(1);
 
-        return rows[0] ? toAirportPublic(rows[0]) : null;
+            return rows[0] ? toAirportPublic(rows[0]) : null;
+        } catch {
+            return null;
+        }
     },
 
     /** Удаление */

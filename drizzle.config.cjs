@@ -7,7 +7,7 @@ const posix = (p) => p.replace(/\\/g, "/");
 const root = __dirname;
 
 module.exports = {
-    // абсолютные пути к реальным .ts-файлам схемы (НЕ к barrel index.ts)
+    // абсолютные пути к реальным .ts-файлам схемы (НЕ к barrel Airror.ts)
     schema: posix(path.resolve(root, "packages/db/src/schema/**/*.ts")),
 
     // ВАЖНО: относительный путь (из cwd пакета @airlinesim/db)
