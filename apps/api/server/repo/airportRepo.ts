@@ -1,6 +1,6 @@
 import { db, schema } from '@airlinesim/db/client';
 import { AirportCreate, AirportPublic, AirportUpdate } from '@airlinesim/db/zod';
-import { asc, count, eq, ilike, or, sql } from 'drizzle-orm';
+import {and, asc, count, eq, ilike, or, sql} from 'drizzle-orm';
 import { z } from 'zod';
 
 type AirportInsert = typeof schema.airports.$inferInsert;
@@ -32,8 +32,6 @@ export const airportRepo = {
                 timezone: data.timezone,
                 lat: data.lat as number,
                 lon: data.lon as number,
-                geog: sql`ST_SetSRID(ST_MakePoint(${data.lon}, ${data.lat}), 4326)::geography`,
-                geom: sql`ST_SetSRID(ST_MakePoint(${data.lon}, ${data.lat}), 4326)::geometry(Point,4326)`,
             };
 
             const [row] = await db
@@ -186,28 +184,44 @@ export const airportRepo = {
     },
 
     /**
-     * Геопоиск ближайших аэропортов.
+     * Геопоиск ближайших аэропортов с поддержкой минимального/максимального радиуса.
      * @param lat широта
      * @param lon долгота
+     * @param opts опциональные данные
      * @param opts.limit лимит (по умолчанию 10)
      * @param opts.offset оффсет (по умолчанию 0)
-     * @param opts.accuracyKm радиус поиска в км; если <=0 — без радиуса (только сортировка по дистанции)
+     * @param opts.minKm минимальная дистанция от точки (в км). Если 0 — без нижней границы.
+     * @param opts.maxKm максимальная дистанция от точки (в км). Если 0 — без верхней границы (только сортировка).
      */
     findByGeo: async (
         lat: number,
         lon: number,
-        opts: { limit?: number; offset?: number; accuracyKm?: number } = {}
+        opts: { limit?: number; offset?: number; minKm?: number; maxKm?: number } = {}
     ) => {
-        const { limit = 10, offset = 0, accuracyKm = 0.1 } = opts;
+        const { limit = 10, offset = 0 } = opts;
+        const minKm = Math.max(0, opts.minKm ?? 0);
+        const maxKm = Math.max(0, opts.maxKm ?? 0);
 
+        if (maxKm > 0 && maxKm <= minKm) {
+            throw new Error('maxKm должен быть больше minKm');
+        }
+
+        // География исходной точки
         const origin = sql`ST_SetSRID(ST_MakePoint(${lon}, ${lat}), 4326)::geography`;
         const distanceExpr = sql<number>`ST_Distance(${schema.airports.geog}, ${origin}) / 1000.0`;
 
-        const where =
-            Number.isFinite(accuracyKm) && accuracyKm > 0
-                ? sql`ST_DWithin(${schema.airports.geog}, ${origin}, ${accuracyKm * 1000})`
-                : undefined;
+        // Условия: верхняя граница — ST_DWithin; нижняя — NOT ST_DWithin
+        const conds: any[] = [];
+        if (maxKm > 0) {
+            conds.push(sql`ST_DWithin(${schema.airports.geog}, ${origin}, ${maxKm * 1000})`);
+        }
+        if (minKm > 0) {
+            conds.push(sql`NOT ST_DWithin(${schema.airports.geog}, ${origin}, ${minKm * 1000})`);
+        }
 
+        const where = conds.length ? and(...conds) : undefined;
+
+        // Сначала отбираем и сортируем по расстоянию
         const [rows, [{ total }]] = await Promise.all([
             db
                 .select({
@@ -233,10 +247,7 @@ export const airportRepo = {
             items: rows.map((row) => {
                 const { distanceKm, ...base } = row;
                 const pub = toAirportPublic(base);
-                return {
-                    ...pub,
-                    distanceKm: distanceKm != null ? Number(distanceKm) : undefined,
-                };
+                return { ...pub, distanceKm: distanceKm != null ? Number(distanceKm) : undefined };
             }),
             total,
             limit,
