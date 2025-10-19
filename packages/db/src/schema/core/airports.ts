@@ -4,10 +4,10 @@ import { customType } from 'drizzle-orm/pg-core'
 import { SQL, sql } from 'drizzle-orm'
 
 const geography = customType<{ data: unknown }>({
-    dataType: () => 'geography',            // <— БЕЗ (Point,4326)
+    dataType: () => 'geography',
 })
 const geometry = customType<{ data: unknown }>({
-    dataType: () => 'geometry',             // можно оставить generic
+    dataType: () => 'geometry',
 })
 
 export const airports = pgTable('airports', {
@@ -23,14 +23,12 @@ export const airports = pgTable('airports', {
     lat: doublePrecision('lat').notNull(),
     lon: doublePrecision('lon').notNull(),
 
-    // Сгенерированные на стороне БД (STORED):
     geog: geography('geog')
         .notNull()
         .generatedAlwaysAs((): SQL =>
             sql`ST_SetSRID(ST_MakePoint(${airports.lon}, ${airports.lat}), 4326)::geography`
         ),
 
-    // Можно generic geometry, а в выражении зафиксировать Point/SRID:
     geom: geometry('geom')
         .notNull()
         .generatedAlwaysAs((): SQL =>
