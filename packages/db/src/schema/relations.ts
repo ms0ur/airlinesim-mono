@@ -2,11 +2,16 @@
 import { relations } from 'drizzle-orm';
 import { airlines } from './core/airlines';
 import { airports } from './core/airports';
+import { users } from './core/users';
 import { aircraftTypes } from './fleet/aircraft-types';
 import { aircraft } from './fleet/aircraft';
 import { routes } from './network/routes';
 import { schedules } from './network/schedules';
 import { flights } from './ops/flights';
+
+export const usersRelations = relations(users, ({ many }) => ({
+    airlines: many(airlines),
+}));
 
 export const airlinesRelations = relations(airlines, ({ one, many }) => ({
     aircraft: many(aircraft),
