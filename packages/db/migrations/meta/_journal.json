@@ -15,6 +15,13 @@
       "when": 1760824860505,
       "tag": "0001_quiet_the_initiative",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1760960194179,
+      "tag": "0002_rapid_quasimodo",
+      "breakpoints": true
     }
   ]
 }
