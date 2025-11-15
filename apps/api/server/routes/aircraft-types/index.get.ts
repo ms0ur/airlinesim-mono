@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { createError } from 'h3';
-import { UserRepo } from '../../repo/userRepo';
+import { aircraftTypeRepo } from '../../repo/aircraftTypesRepo';
 
 const QSchema = z.object({
     mode: z.enum(['id', 'text']),
@@ -39,16 +39,16 @@ export default defineEventHandler(async (event) => {
                 });
             }
 
-            const user = await UserRepo.findById(id);
+            const aircraftType = await aircraftTypeRepo.findById(id);
 
-            if (!user) {
+            if (!aircraftType) {
                 throw createError({
                     statusCode: 404,
-                    statusMessage: 'User Not Found',
+                    statusMessage: 'AircraftType Not Found',
                 });
             }
 
-            return user;
+            return aircraftType;
         }
 
         case 'text': {
@@ -59,7 +59,7 @@ export default defineEventHandler(async (event) => {
                 });
             }
 
-            const result = await UserRepo.find(text, limit, offset);
+            const result = await aircraftTypeRepo.find(text, limit, offset);
             return result;
         }
     }
