@@ -3,6 +3,7 @@ import { db, schema } from '@airlinesim/db/client';
 import { userCreate, userUpdate, userPublic } from '@airlinesim/db/zod';
 import { eq, ilike, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
+import {error} from "nitropack/presets/_unenv/workerd/console";
 
 type UserInsert = typeof schema.users.$inferInsert;
 // type UserSelect = typeof schema.users.$inferSelect;
@@ -12,7 +13,7 @@ export const UserRepo = {
         const values: UserInsert = {
             username: data.username,
             email: data.email,
-            password: data.password,
+            password: await Bun.password.hash(data.password),
         };
 
         try {
@@ -62,6 +63,24 @@ export const UserRepo = {
                         : row.createdAt,
             });
         } catch (error) {
+            throw error;
+        }
+    },
+
+    getHashedPassword: async (id: string) : Promise<{ id: string, password: string }> => {
+        try {
+            const row = await db
+                .select({
+                    id: schema.users.id,
+                    password: schema.users.password,
+                })
+                .from(schema.users)
+                .where(eq(schema.users.id, id))
+                .limit(1)
+                .then((rows) => rows[0]);
+
+            return row;
+        } catch (e) {
             throw error;
         }
     },

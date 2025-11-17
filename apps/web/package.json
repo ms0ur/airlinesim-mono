@@ -11,12 +11,16 @@
   },
   "dependencies": {
     "@airlinesim/shared": "workspace:*",
+    "@tailwindcss/vite": "^4.1.17",
     "nuxt": "^4.1.2",
+    "tailwindcss": "^4.1.17",
     "vue": "^3.5.21",
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
+    "@nuxt/eslint": "^1.10.0",
     "@nuxt/icon": "^2.1.0",
+    "@nuxtjs/i18n": "^10.2.0",
     "@pinia/nuxt": "^0.11.3"
   }
 }
