@@ -6,7 +6,8 @@ config({ path: resolve(__dirname, '../../.env') })
 
 // https://nitro.build/config
 export default defineNitroConfig({
-  compatibilityDate: "latest",
+  // compatibilityDate: "latest",
+  // preset: 'bun',
   srcDir: "server",
     experimental: { openAPI: true },
     openAPI: {

@@ -1,5 +1,5 @@
-import {UserLogin} from "~~/packages/db/src/zod/auth/login";
-import {UserRepo} from "~~/apps/api/server/repo/userRepo";
+import { UserLogin } from "@airlinesim/db/zod";
+import {UserRepo} from "../../repo/userRepo";
 
 export default defineEventHandler(async (event) => {
     const body = await readValidatedBody(event, UserLogin.parse)

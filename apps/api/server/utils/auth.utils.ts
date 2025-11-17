@@ -1,5 +1,5 @@
 import { jwtVerify, SignJWT } from "jose";
-import { UserRepo } from "~~/apps/api/server/repo/userRepo";
+import { UserRepo } from "../repo/userRepo";
 
 const rawSecret = process.env.JWT_SECRET;
 if (!rawSecret && process.env.NODE_ENV === "production") {
