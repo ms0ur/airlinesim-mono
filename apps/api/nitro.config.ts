@@ -16,5 +16,14 @@ export default defineNitroConfig({
             version: '1.0.0',
             description: 'Документация API AirlineSim',
         },
+        route: '/_docs/openapi.json',
+        ui: {
+            scalar: {
+                route: '/_docs/scalar',
+            },
+            swagger: {
+                route: '/_docs/swagger',
+            },
+        }
     }
 });

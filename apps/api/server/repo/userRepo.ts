@@ -1,12 +1,9 @@
-// apps/api/repo/userRepo.ts
 import { db, schema } from '@airlinesim/db/client';
 import { userCreate, userUpdate, userPublic } from '@airlinesim/db/zod';
 import { eq, ilike, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import {error} from "nitropack/presets/_unenv/workerd/console";
 
 type UserInsert = typeof schema.users.$inferInsert;
-// type UserSelect = typeof schema.users.$inferSelect;
 
 export const UserRepo = {
     create: async (data: z.infer<typeof userCreate>) => {
@@ -49,7 +46,7 @@ export const UserRepo = {
                     createdAt: schema.users.createdAt,
                 })
                 .from(schema.users)
-                .where(eq(schema.users.id, id))
+                .where(eq(schema.users.id as any, id) as any)
                 .limit(1)
                 .then((rows) => rows[0]);
 
@@ -67,7 +64,7 @@ export const UserRepo = {
         }
     },
 
-    getHashedPassword: async (id: string) : Promise<{ id: string, password: string }> => {
+    getHashedPassword: async (id: string): Promise<{ id: string; password: string } | null> => {
         try {
             const row = await db
                 .select({
@@ -75,12 +72,12 @@ export const UserRepo = {
                     password: schema.users.password,
                 })
                 .from(schema.users)
-                .where(eq(schema.users.id, id))
+                .where(eq(schema.users.id as any, id) as any)
                 .limit(1)
                 .then((rows) => rows[0]);
 
-            return row;
-        } catch (e) {
+            return row ?? null;
+        } catch (error) {
             throw error;
         }
     },
@@ -95,7 +92,7 @@ export const UserRepo = {
                     createdAt: schema.users.createdAt,
                 })
                 .from(schema.users)
-                .where(eq(schema.users.email, email))
+                .where(eq(schema.users.email as any, email) as any)
                 .limit(1)
                 .then((rows) => rows[0]);
 
@@ -123,7 +120,7 @@ export const UserRepo = {
                     createdAt: schema.users.createdAt,
                 })
                 .from(schema.users)
-                .where(eq(schema.users.username, username))
+                .where(eq(schema.users.username as any, username) as any)
                 .limit(1)
                 .then((rows) => rows[0]);
 
@@ -143,31 +140,37 @@ export const UserRepo = {
 
     find: async (filter = '', limit = 10, offset = 0) => {
         try {
-            const whereExpr =
-                filter.trim().length === 0
-                    ? undefined
-                    : or(
-                        ilike(schema.users.username, `%${filter}%`),
-                        ilike(schema.users.email, `%${filter}%`),
-                    );
+            const trimmed = filter.trim();
+            let whereExpr: any = undefined;
 
-            const [rows, [{ count }]] = await Promise.all([
-                db
-                    .select({
-                        id: schema.users.id,
-                        username: schema.users.username,
-                        email: schema.users.email,
-                        createdAt: schema.users.createdAt,
-                    })
-                    .from(schema.users)
-                    .where(whereExpr)
-                    .limit(limit)
-                    .offset(offset),
-                db
-                    .select({ count: sql<number>`count(*)::int` })
-                    .from(schema.users)
-                    .where(whereExpr),
-            ]);
+            if (trimmed.length > 0) {
+                whereExpr = or(
+                    ilike(schema.users.username as any, `%${trimmed}%`),
+                    ilike(schema.users.email as any, `%${trimmed}%`),
+                );
+            }
+
+            const baseSelect = db
+                .select({
+                    id: schema.users.id,
+                    username: schema.users.username,
+                    email: schema.users.email,
+                    createdAt: schema.users.createdAt,
+                })
+                .from(schema.users);
+
+            const dataQuery = whereExpr
+                ? baseSelect.where(whereExpr).limit(limit).offset(offset)
+                : baseSelect.limit(limit).offset(offset);
+
+            const countSelect = db
+                .select({ count: sql<number>`count(*)::int` as any })
+                .from(schema.users);
+
+            const countQuery = whereExpr ? countSelect.where(whereExpr) : countSelect;
+
+            const [rows, countRows] = await Promise.all([dataQuery, countQuery]);
+            const [{ count }] = countRows;
 
             return {
                 data: rows.map((row) =>
@@ -197,16 +200,15 @@ export const UserRepo = {
         if (patchIn.password !== undefined) patch.password = patchIn.password;
 
         if (Object.keys(patch).length === 0) {
-            // ничего обновлять
             const current = await UserRepo.findById(id);
-            return current; // либо бросить ошибку — на твой вкус
+            return current;
         }
 
         try {
             const [row] = await db
                 .update(schema.users)
                 .set(patch)
-                .where(eq(schema.users.id, id))
+                .where(eq(schema.users.id as any, id) as any)
                 .returning({
                     id: schema.users.id,
                     username: schema.users.username,
