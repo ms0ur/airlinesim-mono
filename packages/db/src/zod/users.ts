@@ -26,6 +26,6 @@ export const userPublic = z.object({
     id: z.uuid(),
     username: z.string().min(1).max(30),
     email: z.email().max(254),
-    createdAt: z.date(),
+    createdAt: z.union([z.date(), z.string()]),
 });
 export type UserPublic = z.infer<typeof userPublic>;

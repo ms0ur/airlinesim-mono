@@ -1,5 +1,6 @@
 import { UserLogin } from "@airlinesim/db/zod";
 import {UserRepo} from "../../repo/userRepo";
+import {loginUserByPassword} from "../../utils/auth.utils";
 
 export default defineEventHandler(async (event) => {
     const body = await readValidatedBody(event, UserLogin.parse)

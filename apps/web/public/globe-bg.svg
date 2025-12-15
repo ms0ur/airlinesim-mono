@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <circle cx="100" cy="100" r="95" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+  <ellipse cx="100" cy="100" rx="95" ry="40" stroke="currentColor" stroke-width="1.5" opacity="0.2"/>
+  <ellipse cx="100" cy="100" rx="95" ry="40" stroke="currentColor" stroke-width="1.5" opacity="0.2" transform="rotate(60 100 100)"/>
+  <ellipse cx="100" cy="100" rx="95" ry="40" stroke="currentColor" stroke-width="1.5" opacity="0.2" transform="rotate(120 100 100)"/>
+  <path d="M100 5 Q150 50 100 100 Q50 150 100 195" stroke="currentColor" stroke-width="1.5" opacity="0.2" fill="none"/>
+  <path d="M100 5 Q50 50 100 100 Q150 150 100 195" stroke="currentColor" stroke-width="1.5" opacity="0.2" fill="none"/>
+</svg>
+

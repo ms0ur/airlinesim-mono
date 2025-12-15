@@ -1,4 +1,13 @@
+<script setup lang="ts">
+const { fetchUser } = useAuth()
+
+onMounted(() => {
+  fetchUser()
+})
+</script>
+
 <template>
-  <div>
-  </div>
+  <NuxtLayout>
+    <NuxtPage />
+  </NuxtLayout>
 </template>

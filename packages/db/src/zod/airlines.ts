@@ -6,6 +6,7 @@ export const AirlineCreate = z.object({
     icao: z.string().length(3).transform(s => s.toUpperCase()).pipe(ICAO3),
     name: z.string().min(2).max(120).trim(),
     baseAirportId: UUID,
+    ownerId: UUID.optional(),
 });
 
 export const AirlinePublic = z.object({
@@ -14,6 +15,7 @@ export const AirlinePublic = z.object({
     icao: ICAO3,
     name: z.string(),
     baseAirportId: UUID,
+    ownerId: UUID.nullable().optional(),
     createdAt: z.string(),
 });
 
@@ -23,4 +25,5 @@ export const AirlineUpdate = z.object({
     icao: z.string().length(3).optional().transform(s => s?.toUpperCase()).pipe(ICAO3.optional()),
     name: z.string().min(2).max(120).trim().optional(),
     baseAirportId: UUID.optional(),
+    ownerId: UUID.optional(),
 })

@@ -3,7 +3,7 @@ import { createError } from 'h3'
 import { airportRepo } from '../../repo/airportRepo'
 
 const QSchema = z.object({
-    mode: z.enum(['id', 'text', 'geoFrom']),
+    mode: z.enum(['id', 'text', 'geoFrom', 'all']),
     id: z.uuid().optional(),
 
     text: z.string().min(1).optional(),
@@ -34,6 +34,10 @@ export default defineEventHandler(async (event) => {
     } = parsed.data
 
     switch (mode) {
+        case 'all': {
+            return airportRepo.find(limit, offset, '')
+        }
+
         case 'id': {
             if (!id) {
                 throw createError({ statusCode: 400, statusMessage: "field 'id' is required" })

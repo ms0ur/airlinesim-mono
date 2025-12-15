@@ -3,7 +3,7 @@ import { createError } from 'h3';
 import { aircraftTypeRepo } from '../../repo/aircraftTypesRepo';
 
 const QSchema = z.object({
-    mode: z.enum(['id', 'text']),
+    mode: z.enum(['id', 'text', 'all']),
     id: z.uuid().optional(),
     text: z.string().min(1).optional(),
 
@@ -31,6 +31,11 @@ export default defineEventHandler(async (event) => {
     } = parsed.data;
 
     switch (mode) {
+        case 'all': {
+            const result = await aircraftTypeRepo.find('', limit, offset);
+            return result;
+        }
+
         case 'id': {
             if (!id) {
                 throw createError({

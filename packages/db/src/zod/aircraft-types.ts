@@ -22,7 +22,7 @@ export const AircraftTypeCreate = z.object({
 
 export const AircraftTypePublic = AircraftTypeCreate.extend({
     id: z.uuid(),
-    createdAt: z.date(),
+    createdAt: z.union([z.date(), z.string()]),
 });
 
 export const AircraftTypeUpdate = z.object({

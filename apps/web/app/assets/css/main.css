@@ -1,1 +1,153 @@
 @import "tailwindcss";
+
+@theme {
+  /* Brand colors */
+  --color-brand-700: #1D4ED8;
+  --color-brand-400: #60A5FA;
+  --color-brand-100: #DBEAFE;
+
+  /* Semantic colors */
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-border: var(--border);
+  --color-text-primary: var(--text-primary);
+  --color-text-muted: var(--text-muted);
+  --color-primary: var(--primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-on-primary: var(--on-primary);
+  --color-on-primary-soft: var(--on-primary-soft);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-error: var(--error);
+  --color-error-bg: var(--error-bg);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-link: var(--link);
+  --color-disabled: var(--disabled);
+
+  /* Fonts */
+  --font-tektur: "Tektur", sans-serif;
+  --font-montserrat: "Montserrat", sans-serif;
+}
+
+/* Light Theme */
+:root {
+  --background: #F3F4F6;
+  --surface: #FFFFFF;
+  --surface-subtle: #F9FAFB;
+  --border: #E5E7EB;
+  --text-primary: #0F172A;
+  --text-muted: #4B5563;
+  --primary: #1D4ED8;
+  --primary-soft: #DBEAFE;
+  --on-primary: #FFFFFF;
+  --on-primary-soft: #1D4ED8;
+  --success: #166534;
+  --success-bg: #DCFCE7;
+  --error: #B91C1C;
+  --error-bg: #FEE2E2;
+  --warning: #9A3412;
+  --warning-bg: #FFEDD5;
+  --link: #1D4ED8;
+  --disabled: #D1D5DB;
+}
+
+/* Dark Theme */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #020617;
+    --surface: #0F1324;
+    --surface-subtle: #020617;
+    --border: #1F2937;
+    --text-primary: #F9FAFB;
+    --text-muted: #9CA3AF;
+    --primary: #60A5FA;
+    --primary-soft: #1D4ED8;
+    --on-primary: #020617;
+    --on-primary-soft: #F9FAFB;
+    --success: #6EE7B7;
+    --success-bg: #022C22;
+    --error: #FCA5A5;
+    --error-bg: #450A0A;
+    --warning: #FED7AA;
+    --warning-bg: #451A03;
+    --link: #60A5FA;
+    --disabled: #4B5563;
+  }
+}
+
+/* Typography */
+.text-h1 {
+  font-family: var(--font-tektur);
+  font-weight: 900; /* Black */
+  font-size: 40px;
+  line-height: 1.2;
+}
+
+.text-h2 {
+  font-family: var(--font-tektur);
+  font-weight: 700; /* Bold */
+  font-size: 32px;
+  line-height: 1.2;
+}
+
+.text-h3 {
+  font-family: var(--font-montserrat);
+  font-weight: 700; /* Bold */
+  font-size: 24px;
+  line-height: 1.4;
+}
+
+.text-h4 {
+  font-family: var(--font-montserrat);
+  font-weight: 600; /* SemiBold */
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.text-subtitle {
+  font-family: var(--font-montserrat);
+  font-weight: 500; /* Medium */
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.text-body {
+  font-family: var(--font-montserrat);
+  font-weight: 400; /* Regular */
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.text-caption {
+  font-family: var(--font-montserrat);
+  font-weight: 300; /* Light */
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* MapLibre Globe Styles */
+.maplibregl-ctrl-bottom-left,
+.maplibregl-ctrl-bottom-right {
+  display: none !important;
+}
+
+.maplibregl-canvas {
+  outline: none;
+}
+
+.maplibregl-popup-content {
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  font-family: var(--font-montserrat);
+  background-color: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.maplibregl-popup-close-button {
+  padding: 4px 8px;
+  color: var(--text-muted);
+}

@@ -16,6 +16,7 @@ export const airlineRepo = {
             baseAirportId: data.baseAirportId as string,
             iata: data.iata as string,
             icao: data.icao as string,
+            ownerId: data.ownerId as string | undefined,
         };
         try {
             const [row] = await db
@@ -27,6 +28,7 @@ export const airlineRepo = {
                     baseAirportId: schema.airlines.baseAirportId,
                     iata: schema.airlines.iata,
                     icao: schema.airlines.icao,
+                    ownerId: schema.airlines.ownerId,
                     createdAt: schema.airlines.createdAt,
                 });
 
@@ -53,6 +55,7 @@ export const airlineRepo = {
 
             return AirlinePublic.parse({
                 ...row,
+                ownerId: row.ownerId ?? null,
                 createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
             });
         } catch (e) {
@@ -128,6 +131,29 @@ export const airlineRepo = {
                 limit,
                 offset
             };
+        } catch (e) {
+            throw airror("DB_ERROR", { cause: e });
+        }
+    },
+
+    findByOwnerId: async (ownerId: string) => {
+        try {
+            const row = await db
+                .select()
+                .from(schema.airlines)
+                .where(eq(schema.airlines.ownerId, ownerId))
+                .limit(1)
+                .then((r) => r[0]);
+
+            if (!row) {
+                return null;
+            }
+
+            return AirlinePublic.parse({
+                ...row,
+                ownerId: row.ownerId ?? null,
+                createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
+            });
         } catch (e) {
             throw airror("DB_ERROR", { cause: e });
         }
