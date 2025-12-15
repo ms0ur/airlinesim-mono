@@ -22,6 +22,34 @@
       "when": 1760960194179,
       "tag": "0002_rapid_quasimodo",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1765796263103,
+      "tag": "0003_bent_mandarin",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1765896263103,
+      "tag": "0004_add_uploads_last_accessed",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1765996263103,
+      "tag": "0005_add_airline_resources",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1766096263103,
+      "tag": "0006_add_fuel_prices",
+      "breakpoints": true
     }
   ]
 }

@@ -7,18 +7,40 @@ interface AircraftType {
   seatCapacity: number
   rangeKm: number
   cruisingSpeedKph: number
+  imageId?: string | null
 }
 
 interface Props {
   aircraft: AircraftType
   selected?: boolean
+  showButton?: boolean
+  buttonText?: string
+  selectedButtonText?: string
 }
 
-defineProps<Props>()
+withDefaults(defineProps<Props>(), {
+  selected: false,
+  showButton: true,
+  buttonText: 'Choose',
+  selectedButtonText: 'Selected'
+})
 
 const emit = defineEmits<{
   select: [aircraft: AircraftType]
 }>()
+
+const config = useRuntimeConfig()
+const apiBase = config.public.apiBase
+
+function getImageUrl(imageId: string | null | undefined): string | null {
+  if (!imageId) return null
+  return `${apiBase}/uploads/${imageId}`
+}
+
+function handleImageError(event: Event) {
+  const target = event.target as HTMLImageElement
+  target.style.display = 'none'
+}
 </script>
 
 <template>
@@ -28,12 +50,19 @@ const emit = defineEmits<{
     :class="selected ? 'border-primary border-2' : 'border-border'"
   >
     <div class="flex flex-col items-center">
-      <div class="w-48 h-24 mb-4 flex items-center justify-center">
+      <div class="w-48 h-24 mb-4 flex items-center justify-center overflow-hidden rounded-lg">
         <img
+          v-if="aircraft.imageId"
+          :src="getImageUrl(aircraft.imageId)!"
+          :alt="aircraft.displayName"
+          class="max-w-full max-h-full object-contain"
+        />
+        <img
+          v-else
           :src="`/aircraft/${aircraft.manufacturer.toLowerCase()}.png`"
           :alt="aircraft.manufacturer"
           class="max-w-full max-h-full object-contain"
-          onerror="this.style.display='none'"
+          @error="handleImageError"
         />
       </div>
       <div class="text-center mb-4">
@@ -55,14 +84,14 @@ const emit = defineEmits<{
         </div>
       </div>
     </div>
-    <div class="mt-4 flex justify-center">
+    <div v-if="showButton" class="mt-4 flex justify-center">
       <button
         class="px-6 py-2 rounded-full text-body font-bold transition-all duration-200"
         :class="selected
           ? 'bg-primary text-on-primary'
           : 'bg-primary-soft text-on-primary-soft hover:bg-primary hover:text-on-primary'"
       >
-        {{ selected ? 'Selected' : 'Choose' }}
+        {{ selected ? selectedButtonText : buttonText }}
       </button>
     </div>
   </div>

@@ -13,15 +13,18 @@ export const AircraftTypeCreate = z.object({
     icao: IcaoCode,
     iata: IataCode.optional(),
 
+    imageId: z.uuid().optional(),
+
     rangeKm: PosInt,
     cruisingSpeedKph: PosInt,
     seatCapacity: PosInt,
 
-    characteristics: z.record(z.string(), z.unknown()).optional(),
+    characteristics: z.record(z.string(), z.unknown()).nullable().optional(),
 });
 
 export const AircraftTypePublic = AircraftTypeCreate.extend({
     id: z.uuid(),
+    imageId: z.uuid().nullable().optional(),
     createdAt: z.union([z.date(), z.string()]),
 });
 
@@ -33,6 +36,8 @@ export const AircraftTypeUpdate = z.object({
 
     icao: IcaoCode.optional(),
     iata: z.union([IataCode, z.null()]).optional(),
+
+    imageId: z.union([z.uuid(), z.null()]).optional(),
 
     rangeKm: PosInt.optional(),
     cruisingSpeedKph: PosInt.optional(),

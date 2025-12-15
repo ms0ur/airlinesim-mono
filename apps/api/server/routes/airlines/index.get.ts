@@ -3,10 +3,10 @@ import { createError } from 'h3'
 import { airlineRepo } from '../../repo/airlineRepo'
 
 const QSchema = z.object({
-    mode: z.enum(['id', 'text']),
+    mode: z.enum(['id', 'text', 'all']).default('all'),
     id: z.uuid().optional(),
 
-    text: z.string().min(1).optional(),
+    text: z.string().optional(),
 
     limit: z.coerce.number().int().min(1).max(1000).default(10),
     offset: z.coerce.number().int().min(0).default(0),
@@ -29,16 +29,31 @@ export default defineEventHandler(async (event) => {
     switch (mode) {
         case 'id': {
             if (!id) {
-                throw createError({ statusCode: 400, statusMessage: "field 'id' is required" })
+                throw createError({
+                    statusCode: 400,
+                    statusMessage: 'ID is required for mode=id',
+                })
             }
-            return airlineRepo.findById(id)
+            const item = await airlineRepo.findById(id)
+            if (!item) {
+                throw createError({
+                    statusCode: 404,
+                    statusMessage: 'Airline not found',
+                })
+            }
+            return item
         }
-
         case 'text': {
             if (!text) {
-                throw createError({ statusCode: 400, statusMessage: "field 'text' is required" })
+                throw createError({
+                    statusCode: 400,
+                    statusMessage: 'Text is required for mode=text',
+                })
             }
-            return airlineRepo.find(text, limit, offset)
+            return await airlineRepo.find(text, limit, offset)
+        }
+        case 'all': {
+            return await airlineRepo.find('', limit, offset)
         }
     }
 })

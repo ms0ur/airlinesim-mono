@@ -16,7 +16,7 @@ interface Airport {
   name: string
 }
 
-const { registerAirline, isAuthenticated, fetchUser } = useAuth()
+const { registerAirline, fetchUser } = useAuth()
 const router = useRouter()
 const config = useRuntimeConfig()
 const apiBase = config.public.apiBase || 'http://localhost:3001'
@@ -33,6 +33,7 @@ const aircraftTypes = ref<AircraftType[]>([])
 const airports = ref<Airport[]>([])
 const airportSearch = ref('')
 const isSearchingAirports = ref(false)
+const ignoreSearch = ref(false)
 
 const gameModeOptions = [
   { value: 'easy', label: 'Easy mode' },
@@ -75,6 +76,10 @@ const searchAirports = async (query: string) => {
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
 
 watch(airportSearch, (value) => {
+  if (ignoreSearch.value) {
+    ignoreSearch.value = false
+    return
+  }
   if (searchTimeout) {
     clearTimeout(searchTimeout)
   }
@@ -85,6 +90,7 @@ watch(airportSearch, (value) => {
 
 const selectAirport = (airport: Airport) => {
   selectedAirport.value = airport.id
+  ignoreSearch.value = true
   airportSearch.value = `${airport.iata} - ${airport.name}`
   airports.value = []
 }
@@ -110,7 +116,8 @@ const handleSubmit = async () => {
     name: airlineName.value,
     iata,
     icao,
-    baseAirportId: selectedAirport.value
+    baseAirportId: selectedAirport.value,
+    startingAircraftTypeId: selectedAircraft.value || undefined
   })
 
   if (success) {

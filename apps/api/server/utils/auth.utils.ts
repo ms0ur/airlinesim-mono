@@ -1,5 +1,6 @@
 import { jwtVerify, SignJWT } from "jose";
 import { UserRepo } from "../repo/userRepo";
+import bcrypt from "bcryptjs";
 
 const rawSecret = process.env.JWT_SECRET;
 if (!rawSecret && process.env.NODE_ENV === "production") {
@@ -56,7 +57,7 @@ async function validatePass(userId: string, password: string): Promise<boolean> 
         return false;
     }
 
-    return await Bun.password.verify(password, user.password);
+    return await bcrypt.compare(password, user.password);
 }
 
 export async function validateAuth(token: string): Promise<AccessTokenPayload | null> {

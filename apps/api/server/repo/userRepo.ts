@@ -2,6 +2,7 @@ import { db, schema } from '@airlinesim/db/client';
 import { userCreate, userUpdate, userPublic } from '@airlinesim/db/zod';
 import { eq, ilike, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
+import bcrypt from 'bcryptjs';
 
 type UserInsert = typeof schema.users.$inferInsert;
 
@@ -10,7 +11,7 @@ export const UserRepo = {
         const values: UserInsert = {
             username: data.username,
             email: data.email,
-            password: await Bun.password.hash(data.password),
+            password: await bcrypt.hash(data.password, 10),
         };
 
         try {
@@ -225,6 +226,19 @@ export const UserRepo = {
                         ? row.createdAt.toISOString()
                         : row.createdAt,
             });
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    delete: async (id: string): Promise<boolean> => {
+        try {
+            const deleted = await db
+                .delete(schema.users)
+                .where(eq(schema.users.id as any, id) as any)
+                .returning({ id: schema.users.id });
+
+            return deleted.length > 0;
         } catch (error) {
             throw error;
         }

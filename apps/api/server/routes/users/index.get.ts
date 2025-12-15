@@ -3,9 +3,9 @@ import { createError } from 'h3';
 import { UserRepo } from '../../repo/userRepo';
 
 const QSchema = z.object({
-    mode: z.enum(['id', 'text']),
+    mode: z.enum(['id', 'text', 'all']).default('all'),
     id: z.uuid().optional(),
-    text: z.string().min(1).optional(),
+    text: z.string().optional(),
 
     limit: z.coerce.number().int().min(1).max(1000).default(10),
     offset: z.coerce.number().int().min(0).default(0),
@@ -31,6 +31,11 @@ export default defineEventHandler(async (event) => {
     } = parsed.data;
 
     switch (mode) {
+        case 'all': {
+            const result = await UserRepo.find('', limit, offset);
+            return result;
+        }
+
         case 'id': {
             if (!id) {
                 throw createError({

@@ -15,6 +15,7 @@ export const aircraftTypeRepo = {
             model: data.model,
             icao: data.icao,
             iata: data.iata,
+            imageId: data.imageId,
             rangeKm: data.rangeKm,
             cruisingSpeedKph: data.cruisingSpeedKph,
             seatCapacity: data.seatCapacity,
@@ -31,6 +32,7 @@ export const aircraftTypeRepo = {
                         model: schema.aircraftTypes.model,
                         icao: schema.aircraftTypes.icao,
                         iata: schema.aircraftTypes.iata,
+                        imageId: schema.aircraftTypes.imageId,
                         rangeKm: schema.aircraftTypes.rangeKm,
                         cruisingSpeedKph: schema.aircraftTypes.cruisingSpeedKph,
                         seatCapacity: schema.aircraftTypes.seatCapacity,
@@ -109,8 +111,43 @@ export const aircraftTypeRepo = {
         }
     },
     edit: async (data: z.infer<typeof AircraftTypeUpdate>) => {
-        // TODO implement method
-        console.warn("aircraftTypeRepo.edit(data) is not implemented");
-        throw new Error("aircraftTypeRepo.edit(data) is not implemented")
+        const { id, ...patchIn } = data;
+        const patch = Object.fromEntries(
+            Object.entries(patchIn).filter(([, v]) => v !== undefined)
+        ) as Partial<AircraftTypeInsert>;
+
+        if (Object.keys(patch).length === 0) {
+            return aircraftTypeRepo.findById(id);
+        }
+
+        try {
+            const [row] = await db
+                .update(schema.aircraftTypes)
+                .set(patch)
+                .where(eq(schema.aircraftTypes.id, id))
+                .returning();
+
+            if (!row) return null;
+
+            return AircraftTypePublic.parse({
+                ...row,
+                createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
+            });
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    delete: async (id: string): Promise<boolean> => {
+        try {
+            const deleted = await db
+                .delete(schema.aircraftTypes)
+                .where(eq(schema.aircraftTypes.id, id))
+                .returning({ id: schema.aircraftTypes.id });
+
+            return deleted.length > 0;
+        } catch (error) {
+            throw error;
+        }
     }
 }

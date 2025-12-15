@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { login, isAuthenticated } = useAuth()
+const { login, isAuthenticated, airline, fetchUser } = useAuth()
 const router = useRouter()
 
 const email = ref('')
@@ -19,7 +19,13 @@ const handleSubmit = async () => {
   const success = await login(email.value, password.value)
 
   if (success) {
-    router.push('/')
+    // After login, fetch user data to check for airline
+    await fetchUser()
+    if (airline.value) {
+      router.push('/')
+    } else {
+      router.push('/auth/register-airline')
+    }
   } else {
     error.value = 'Invalid email or password'
   }
@@ -27,9 +33,13 @@ const handleSubmit = async () => {
   isLoading.value = false
 }
 
-watch(isAuthenticated, (value) => {
-  if (value) {
-    router.push('/')
+watch([isAuthenticated, airline], ([auth, air]) => {
+  if (auth) {
+    if (air) {
+      router.push('/')
+    } else {
+      router.push('/auth/register-airline')
+    }
   }
 })
 </script>

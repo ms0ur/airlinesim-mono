@@ -9,6 +9,15 @@ type AirlineInsert = typeof schema.airlines.$inferInsert;
 
 const AirlineId = z.uuid();
 
+function generateTailNumber(icao: string): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const nums = '0123456789';
+    let suffix = '';
+    for (let i = 0; i < 2; i++) suffix += chars[Math.floor(Math.random() * chars.length)];
+    for (let i = 0; i < 2; i++) suffix += nums[Math.floor(Math.random() * nums.length)];
+    return `${icao}-${suffix}`;
+}
+
 export const airlineRepo = {
     create: async (data: z.infer<typeof AirlineCreate>) => {
         const values: AirlineInsert = {
@@ -29,11 +38,26 @@ export const airlineRepo = {
                     iata: schema.airlines.iata,
                     icao: schema.airlines.icao,
                     ownerId: schema.airlines.ownerId,
+                    balance: schema.airlines.balance,
+                    fuelTons: schema.airlines.fuelTons,
                     createdAt: schema.airlines.createdAt,
                 });
 
+            if (data.startingAircraftTypeId) {
+                await db
+                    .insert(schema.aircraft)
+                    .values({
+                        airlineId: row.id,
+                        typeId: data.startingAircraftTypeId as string,
+                        tailNumber: generateTailNumber(row.icao as string),
+                        inService: true,
+                    });
+            }
+
             return AirlinePublic.parse({
                 ...row,
+                balance: row.balance ?? 50000000,
+                fuelTons: row.fuelTons ?? 30000,
                 createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
             });
         } catch (e: any) {
@@ -56,6 +80,8 @@ export const airlineRepo = {
             return AirlinePublic.parse({
                 ...row,
                 ownerId: row.ownerId ?? null,
+                balance: row.balance ?? 50000000,
+                fuelTons: row.fuelTons ?? 30000,
                 createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
             });
         } catch (e) {
@@ -81,6 +107,9 @@ export const airlineRepo = {
                     baseAirportId: schema.airlines.baseAirportId,
                     iata: schema.airlines.iata,
                     icao: schema.airlines.icao,
+                    ownerId: schema.airlines.ownerId,
+                    balance: schema.airlines.balance,
+                    fuelTons: schema.airlines.fuelTons,
                     createdAt: schema.airlines.createdAt,
                 });
 
@@ -89,6 +118,8 @@ export const airlineRepo = {
             }
             return AirlinePublic.parse({
                 ...row,
+                balance: row.balance ?? 50000000,
+                fuelTons: row.fuelTons ?? 30000,
                 createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
             });
         } catch (e) {
@@ -125,6 +156,8 @@ export const airlineRepo = {
             return {
                 data: rows.map(row => AirlinePublic.parse({
                 ...row,
+                balance: row.balance ?? 50000000,
+                fuelTons: row.fuelTons ?? 30000,
                 createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
                 })),
                 total: count,
@@ -152,8 +185,23 @@ export const airlineRepo = {
             return AirlinePublic.parse({
                 ...row,
                 ownerId: row.ownerId ?? null,
+                balance: row.balance ?? 50000000,
+                fuelTons: row.fuelTons ?? 30000,
                 createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
             });
+        } catch (e) {
+            throw airror("DB_ERROR", { cause: e });
+        }
+    },
+
+    delete: async (id: string): Promise<boolean> => {
+        try {
+            const deleted = await db
+                .delete(schema.airlines)
+                .where(eq(schema.airlines.id, id))
+                .returning({ id: schema.airlines.id });
+
+            return deleted.length > 0;
         } catch (e) {
             throw airror("DB_ERROR", { cause: e });
         }

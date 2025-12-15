@@ -44,7 +44,10 @@ export function airportsToGeoJSON(airports: GlobeAirport[]) {
         id: airport.id,
         name: airport.name,
         iata: airport.iata,
-        pax: airport.pax
+        icao: airport.icao || '',
+        timezone: airport.timezone || '',
+        pax: airport.pax,
+        isHub: airport.isHub || false
       }
     }))
   }

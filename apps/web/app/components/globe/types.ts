@@ -1,11 +1,12 @@
-// Globe component types
-
 export interface GlobeAirport {
   id: string
   name: string
   iata: string
-  coords: [number, number] // [lng, lat]
+  coords: [number, number]
   pax?: string
+  isHub?: boolean
+  icao?: string
+  timezone?: string
 }
 
 export interface GlobeRoute {
@@ -16,29 +17,17 @@ export interface GlobeRoute {
 }
 
 export interface GlobeProps {
-  /** Airports to display on globe */
   airports?: GlobeAirport[]
-  /** Routes to display on globe */
   routes?: GlobeRoute[]
-  /** Enable user interaction (pan, zoom, rotate) */
   interactive?: boolean
-  /** Enable auto-rotation */
   autoRotate?: boolean
-  /** Auto-rotation speed (degrees per frame) */
   rotateSpeed?: number
-  /** Show routes layer */
   showRoutes?: boolean
-  /** Show airports layer */
   showAirports?: boolean
-  /** Initial center [lng, lat] */
   center?: [number, number]
-  /** Initial zoom level */
   zoom?: number
-  /** Initial pitch angle */
   pitch?: number
-  /** Padding for the map view */
   padding?: { top: number; bottom: number; left: number; right: number }
-  /** Projection mode */
   projection?: 'globe' | 'mercator'
 }
 

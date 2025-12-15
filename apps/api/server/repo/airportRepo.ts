@@ -180,7 +180,7 @@ export const airportRepo = {
         ]);
 
         return {
-            items: rows.map(toAirportPublic),
+            data: rows.map(toAirportPublic),
             total,
             limit,
             offset,
@@ -248,7 +248,7 @@ export const airportRepo = {
         ]);
 
         return {
-            items: rows.map((row) => {
+            data: rows.map((row) => {
                 const { distanceKm, ...base } = row;
                 const pub = toAirportPublic(base);
                 return { ...pub, distanceKm: distanceKm != null ? Number(distanceKm) : undefined };
@@ -257,5 +257,18 @@ export const airportRepo = {
             limit,
             offset,
         };
+    },
+
+    delete: async (id: string): Promise<boolean> => {
+        try {
+            const deleted = await db
+                .delete(schema.airports)
+                .where(eq(schema.airports.id, id))
+                .returning({ id: schema.airports.id });
+
+            return deleted.length > 0;
+        } catch (e) {
+            throw e;
+        }
     },
 };

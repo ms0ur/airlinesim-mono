@@ -12,6 +12,8 @@ export interface Airline {
   icao: string
   baseAirportId: string
   ownerId: string | null
+  balance: number
+  fuelTons: number
   createdAt: string
 }
 
@@ -53,7 +55,7 @@ export const useAuth = () => {
 
   const register = async (username: string, email: string, password: string): Promise<{ success: boolean; userId?: string }> => {
     try {
-      const response = await $fetch<{ data: User }>(`${apiBase}/users/create`, {
+      const response = await $fetch<{ data: User }>(`${apiBase}/users`, {
         method: 'POST',
         body: { username, email, password }
       })
@@ -72,9 +74,10 @@ export const useAuth = () => {
     iata: string
     icao: string
     baseAirportId: string
+    startingAircraftTypeId?: string
   }): Promise<boolean> => {
     try {
-      const response = await $fetch<{ data: Airline }>(`${apiBase}/airlines/create`, {
+      const response = await $fetch<{ data: Airline }>(`${apiBase}/airlines`, {
         method: 'POST',
         body: data,
         credentials: 'include'

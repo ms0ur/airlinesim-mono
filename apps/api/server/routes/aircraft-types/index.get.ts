@@ -3,9 +3,9 @@ import { createError } from 'h3';
 import { aircraftTypeRepo } from '../../repo/aircraftTypesRepo';
 
 const QSchema = z.object({
-    mode: z.enum(['id', 'text', 'all']),
+    mode: z.enum(['id', 'text', 'all']).default('all'),
     id: z.uuid().optional(),
-    text: z.string().min(1).optional(),
+    text: z.string().optional(),
 
     limit: z.coerce.number().int().min(1).max(1000).default(10),
     offset: z.coerce.number().int().min(0).default(0),

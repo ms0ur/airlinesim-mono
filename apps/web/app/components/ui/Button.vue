@@ -1,6 +1,6 @@
 <script setup lang="ts">
 interface Props {
-  variant?: 'primary' | 'secondary' | 'ghost'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'destructive'
   size?: 'sm' | 'md' | 'lg'
   disabled?: boolean
 }
@@ -26,6 +26,7 @@ withDefaults(defineProps<Props>(), {
       variant === 'primary' ? 'bg-primary text-on-primary hover:bg-brand-700 hover:brightness-110' : '',
       variant === 'secondary' ? 'bg-surface text-text-primary border border-border hover:bg-surface-subtle' : '',
       variant === 'ghost' ? 'bg-transparent text-primary hover:bg-primary-soft' : '',
+      variant === 'destructive' ? 'bg-red-500 text-white hover:bg-red-600' : '',
 
       // Disabled
       disabled ? 'opacity-50 cursor-not-allowed' : ''

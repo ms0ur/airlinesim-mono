@@ -7,6 +7,7 @@ export const AirlineCreate = z.object({
     name: z.string().min(2).max(120).trim(),
     baseAirportId: UUID,
     ownerId: UUID.optional(),
+    startingAircraftTypeId: UUID.optional(), // First aircraft type to add
 });
 
 export const AirlinePublic = z.object({
@@ -16,6 +17,8 @@ export const AirlinePublic = z.object({
     name: z.string(),
     baseAirportId: UUID,
     ownerId: UUID.nullable().optional(),
+    balance: z.number(),
+    fuelTons: z.number(),
     createdAt: z.string(),
 });
 
@@ -26,4 +29,6 @@ export const AirlineUpdate = z.object({
     name: z.string().min(2).max(120).trim().optional(),
     baseAirportId: UUID.optional(),
     ownerId: UUID.optional(),
+    balance: z.number().optional(),
+    fuelTons: z.number().optional(),
 })

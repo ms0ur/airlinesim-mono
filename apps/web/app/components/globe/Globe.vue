@@ -17,6 +17,7 @@ interface Props {
   pitch?: number
   padding?: { top: number; bottom: number; left: number; right: number }
   projection?: 'globe' | 'mercator'
+  offsetTop?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -31,29 +32,31 @@ const props = withDefaults(defineProps<Props>(), {
   zoom: 1.8,
   pitch: 30,
   padding: () => ({ top: 40, bottom: 320, left: 0, right: 0 }),
-  projection: 'globe'
+  projection: 'globe',
+  offsetTop: 0
 })
+
+const emit = defineEmits<{
+  airportClick: [airport: GlobeAirport]
+  zoomChange: [zoom: number]
+}>()
 
 const theme = ref<'light' | 'dark'>('light')
 const colors = computed(() => globePalette[theme.value])
 
 const mapContainer = ref<HTMLDivElement | null>(null)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let map: any = null
 let animationFrameId: number | null = null
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let maplibregl: any = null
+let currentPopup: any = null
 
-// Compute GeoJSON data
 const airportsGeoJSON = computed(() => airportsToGeoJSON(props.airports))
 const routesGeoJSON = computed(() => routesToGeoJSON(props.routes))
 
-// Update map layers when data changes
 function updateLayers() {
   if (!map || !maplibregl) return
   const palette = colors.value
 
-  // Update or add routes source/layer
   if (map.getSource('routes')) {
     (map.getSource('routes') as any).setData(routesGeoJSON.value)
   } else {
@@ -71,7 +74,6 @@ function updateLayers() {
     })
   }
 
-  // Update or add airports source/layer
   if (map.getSource('airports')) {
     (map.getSource('airports') as any).setData(airportsGeoJSON.value)
   } else {
@@ -81,15 +83,14 @@ function updateLayers() {
       type: 'circle',
       source: 'airports',
       paint: {
-        'circle-radius': 7,
-        'circle-color': palette.primary,
-        'circle-stroke-width': 2,
+        'circle-radius': ['case', ['get', 'isHub'], 10, 7],
+        'circle-color': ['case', ['get', 'isHub'], palette.primary, palette.primary],
+        'circle-stroke-width': ['case', ['get', 'isHub'], 3, 2],
         'circle-stroke-color': palette.surface
       }
     })
   }
 
-  // Update visibility
   if (map.getLayer('routes')) {
     map.setLayoutProperty('routes', 'visibility', props.showRoutes ? 'visible' : 'none')
   }
@@ -98,7 +99,6 @@ function updateLayers() {
   }
 }
 
-// Update colors when theme changes
 function updateColors() {
   if (!map) return
   const palette = colors.value
@@ -116,12 +116,68 @@ function updateColors() {
     map.setPaintProperty('routes', 'line-color', palette.primary)
   }
   if (map.getLayer('airports')) {
-    map.setPaintProperty('airports', 'circle-color', palette.primary)
+    map.setPaintProperty('airports', 'circle-color', ['case', ['get', 'isHub'], palette.primary, palette.primary])
     map.setPaintProperty('airports', 'circle-stroke-color', palette.surface)
   }
 }
 
-// Auto-rotation animation
+function setupAirportInteraction() {
+  if (!map || !maplibregl) return
+
+  map.on('click', 'airports', (e: any) => {
+    if (!e.features || !e.features[0]) return
+
+    const feature = e.features[0]
+    const coords = feature.geometry.coordinates.slice()
+    const properties = feature.properties
+
+    const airportData: GlobeAirport = {
+      id: properties.id,
+      name: properties.name,
+      iata: properties.iata,
+      icao: properties.icao,
+      timezone: properties.timezone,
+      coords: coords as [number, number],
+      isHub: properties.isHub
+    }
+
+    emit('airportClick', airportData)
+
+    if (currentPopup) {
+      currentPopup.remove()
+    }
+
+    const popupContent = `
+      <div style="font-family: 'Montserrat', sans-serif; padding: 8px; min-width: 180px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+          <span style="font-size: 20px; font-weight: 700;">${properties.iata}</span>
+          ${properties.icao ? `<span style="font-size: 12px; color: #6B7280;">${properties.icao}</span>` : ''}
+        </div>
+        <div style="font-size: 14px; color: #374151; margin-bottom: 8px;">${properties.name}</div>
+        ${properties.timezone ? `<div style="font-size: 12px; color: #6B7280;">🌐 ${properties.timezone}</div>` : ''}
+        ${properties.isHub ? '<div style="font-size: 12px; color: #1D4ED8; margin-top: 4px;">✈ Your Hub</div>' : ''}
+      </div>
+    `
+
+    currentPopup = new maplibregl.Popup({
+      closeButton: true,
+      closeOnClick: true,
+      maxWidth: '300px'
+    })
+      .setLngLat(coords)
+      .setHTML(popupContent)
+      .addTo(map)
+  })
+
+  map.on('mouseenter', 'airports', () => {
+    map.getCanvas().style.cursor = 'pointer'
+  })
+
+  map.on('mouseleave', 'airports', () => {
+    map.getCanvas().style.cursor = ''
+  })
+}
+
 function startAutoRotate() {
   if (!map || !props.autoRotate) return
 
@@ -151,25 +207,51 @@ function stopAutoRotate() {
   }
 }
 
-// Initialize map
+const setProjection = (type: 'globe' | 'mercator') => {
+  if (map) {
+    try {
+      map.setProjection({ type })
+    } catch (e) {
+      console.warn('Could not change projection:', e)
+    }
+  }
+}
+
+const zoomIn = () => {
+  if (map) {
+    map.zoomIn()
+  }
+}
+
+const zoomOut = () => {
+  if (map) {
+    map.zoomOut()
+  }
+}
+
+const getZoom = () => {
+  return map ? map.getZoom() : props.zoom
+}
+
+defineExpose({
+  setProjection,
+  zoomIn,
+  zoomOut,
+  getZoom
+})
+
 async function initMap() {
   if (!mapContainer.value) {
-    console.error('[Globe] Map container not found')
     return
   }
 
   try {
-    // Dynamic import to ensure client-side only
     const module = await import('maplibre-gl')
     maplibregl = module.default || module
-
-    console.log('[Globe] MapLibre GL loaded')
-    console.log('[Globe] Projection prop:', props.projection)
 
     const palette = colors.value
     const style = createMapStyle(palette, props.projection)
 
-    // Create map with projection in style
     const mapOptions: any = {
       container: mapContainer.value,
       style: style,
@@ -187,26 +269,17 @@ async function initMap() {
 
     map = new maplibregl.Map(mapOptions)
 
-    map.on('error', (e: any) => {
-      console.error('[Globe] Map error:', e)
-    })
-
     map.on('load', () => {
       if (!map) return
 
-      console.log('[Globe] Map loaded successfully')
-
-      // Set projection after map loads
       if (props.projection === 'globe') {
         try {
           map.setProjection({ type: 'globe' })
-          console.log('[Globe] Globe projection set')
         } catch (e) {
-          console.warn('[Globe] Could not set globe projection:', e)
+          console.warn('Could not set globe projection:', e)
         }
       }
 
-      // Set padding with validation
       const padding = {
         top: Math.max(0, props.padding.top),
         bottom: Math.max(0, props.padding.bottom),
@@ -216,24 +289,27 @@ async function initMap() {
       map.setPadding(padding)
 
       updateLayers()
-      // Note: setFog/atmosphere not available in MapLibre GL 5.x
+      setupAirportInteraction()
 
       if (props.autoRotate) {
         startAutoRotate()
       }
     })
+
+    map.on('zoom', () => {
+      emit('zoomChange', map.getZoom())
+    })
   } catch (error) {
-    console.error('[Globe] Failed to initialize map:', error)
+    console.error('Failed to initialize map:', error)
   }
 }
 
-// Watch for prop changes
 watch(() => props.projection, (newVal) => {
   if (map) {
     try {
       map.setProjection({ type: newVal })
     } catch (e) {
-      console.warn('[Globe] Could not change projection:', e)
+      console.warn('Could not change projection:', e)
     }
   }
 })
@@ -258,7 +334,6 @@ watch(theme, () => {
   }
 })
 
-// Detect system theme
 onMounted(() => {
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
   theme.value = mediaQuery.matches ? 'dark' : 'light'
@@ -272,6 +347,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   stopAutoRotate()
+  if (currentPopup) {
+    currentPopup.remove()
+  }
   map?.remove()
   map = null
 })

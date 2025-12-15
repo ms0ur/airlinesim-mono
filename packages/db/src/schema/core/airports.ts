@@ -1,4 +1,3 @@
-// packages/db/src/schema/airports.ts
 import { pgTable, uuid, varchar, timestamp, uniqueIndex, doublePrecision } from 'drizzle-orm/pg-core'
 import { customType } from 'drizzle-orm/pg-core'
 import { SQL, sql } from 'drizzle-orm'
