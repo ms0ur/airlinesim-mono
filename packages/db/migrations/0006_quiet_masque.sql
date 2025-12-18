@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "aircraft_types_icao_uq" ON "aircraft_types" USING btree ("icao");

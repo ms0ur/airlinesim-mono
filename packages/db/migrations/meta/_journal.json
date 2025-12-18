@@ -43,6 +43,13 @@
       "when": 1766089597089,
       "tag": "0005_hesitant_tinkerer",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1766090567839,
+      "tag": "0006_quiet_masque",
+      "breakpoints": true
     }
   ]
 }
