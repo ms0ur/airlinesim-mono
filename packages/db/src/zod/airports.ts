@@ -32,7 +32,7 @@ const IanaTimezone = z
  * `lat/lon` допускают как number, так и строку "55.7522" / "55,7522".
  */
 export const AirportCreate = z.object({
-    iata: UpperOpt(IATA3),
+    iata: UpperOpt(IATA3.optional().nullable()),
     icao: UpperOpt(ICAO4),
     name: z.string().min(2).max(120).trim(),
     lat: NumberFromUserInput(-90, 90),
@@ -54,7 +54,7 @@ export const AirportCreate = z.object({
  */
 export const AirportPublic = z.object({
     id: UUID,
-    iata: IATA3,
+    iata: IATA3.nullable().optional(),
     icao: ICAO4,
     name: z.string(),
     lat: z.number(),

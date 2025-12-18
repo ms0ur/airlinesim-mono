@@ -10,6 +10,25 @@ type RunwayInsert = typeof schema.runways.$inferInsert;
 
 const AirportId = z.uuid();
 
+const airportPublicFields = {
+    id: schema.airports.id,
+    iata: schema.airports.iata,
+    icao: schema.airports.icao,
+    name: schema.airports.name,
+    lat: schema.airports.lat,
+    lon: schema.airports.lon,
+    timezone: schema.airports.timezone,
+    createdAt: schema.airports.createdAt,
+    type: schema.airports.type,
+    continent: schema.airports.continent,
+    isoCountry: schema.airports.isoCountry,
+    isoRegion: schema.airports.isoRegion,
+    municipality: schema.airports.municipality,
+    gpsCode: schema.airports.gpsCode,
+    localCode: schema.airports.localCode,
+    elevationFt: schema.airports.elevationFt,
+};
+
 const pickDefined = <T extends Record<string, unknown>>(obj: T) =>
     Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as Partial<T>;
 
@@ -154,16 +173,7 @@ export const airportRepo = {
                 .update(schema.airports)
                 .set(setObj)
                 .where(eq(schema.airports.id, id))
-                .returning({
-                    id: schema.airports.id,
-                    iata: schema.airports.iata,
-                    icao: schema.airports.icao,
-                    name: schema.airports.name,
-                    lat: schema.airports.lat,
-                    lon: schema.airports.lon,
-                    timezone: schema.airports.timezone,
-                    createdAt: schema.airports.createdAt,
-                });
+                .returning(airportPublicFields);
 
             if (!row) throw new Error('Аэропорт не найден');
             return toAirportPublic(row);
@@ -292,14 +302,7 @@ export const airportRepo = {
         const [rows, [{ total }]] = await Promise.all([
             db
                 .select({
-                    id: schema.airports.id,
-                    iata: schema.airports.iata,
-                    icao: schema.airports.icao,
-                    name: schema.airports.name,
-                    lat: schema.airports.lat,
-                    lon: schema.airports.lon,
-                    timezone: schema.airports.timezone,
-                    createdAt: schema.airports.createdAt,
+                    ...airportPublicFields,
                     distanceKm: distanceExpr,
                 })
                 .from(schema.airports)
