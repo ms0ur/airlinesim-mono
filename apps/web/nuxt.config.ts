@@ -24,6 +24,11 @@ export default defineNuxtConfig({
     css: ['./app/assets/css/main.css'],
 
 
+  nitro: {
+    prerender: {
+      crawlLinks: false,
+    }
+  },
 
   modules: [
     '@pinia/nuxt',

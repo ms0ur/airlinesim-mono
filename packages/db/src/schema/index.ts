@@ -9,3 +9,6 @@ export * from './network/schedules';
 export * from './ops/flights';
 export * from './ops/fuel-prices';
 export * from './relations';
+export * from './events/enums';
+export * from './events/eventInstances';
+export * from './events/metricModifiers';

@@ -1,12 +1,17 @@
 {
-  "name": "@airlinesim/aivent",
+  "name": "@airlinesim/aivents",
   "version": "0.0.1",
   "private": true,
   "type": "module",
   "sideEffects": false,
+  "scripts": {
+    "gen:exports": "bun scripts/generate-exports.ts"
+  },
   "exports": {
-    ".": {
-      "events": "./src/index.ts"
-    }
+    ".": "./src/index.ts",
+    "./core": "./src/core/index.ts",
+    "./definitions": "./src/definitions/index.ts",
+    "./engine": "./src/engine/index.ts",
+    "./events": "./src/events/index.ts"
   }
 }

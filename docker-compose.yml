@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    restart: always
+    environment:
+      POSTGRES_USER: airlinesim
+      POSTGRES_PASSWORD: airlinesim_password
+      POSTGRES_DB: airlinesim
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: always
+    environment:
+      DATABASE_URL: postgres://airlinesim:airlinesim_password@postgres:5432/airlinesim
+      NITRO_PORT: 4000
+      NITRO_HOST: 0.0.0.0
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+
+  migrator:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: base
+    restart: on-failure
+    environment:
+      DATABASE_URL: postgres://airlinesim:airlinesim_password@postgres:5432/airlinesim
+    command: bun run db:migrate
+    depends_on:
+      - postgres
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: always
+    environment:
+      NUXT_PUBLIC_API_BASE: http://localhost:4000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:

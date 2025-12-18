@@ -9,6 +9,7 @@
     "@airlinesim/airror": "workspace:*",
     "@airlinesim/db": "workspace:*",
     "@airlinesim/shared": "workspace:*",
+    "@airlinesim/aivents": "workspace:*",
     "@types/bcryptjs": "^3.0.0",
     "drizzle-kit": "^0.31.4",
     "h3": "^1.15.4",

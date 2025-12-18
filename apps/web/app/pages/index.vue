@@ -157,7 +157,6 @@ watch(airline, async (newAirline) => {
 
       <main class="flex-1 flex overflow-hidden">
         <div class="flex-1 relative flex flex-col">
-          <div style="height: 250px;"></div>
 
           <div class="flex-1 relative">
             <ClientOnly>

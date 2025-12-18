@@ -8,7 +8,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "turbo run dev --parallel",
+    "dev": "bun run exports:gen && turbo run dev --parallel",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test",
@@ -16,7 +16,8 @@
     "db:gen": "bun run --filter @airlinesim/db generate",
     "db:migrate": "bun run --filter @airlinesim/db migrate",
     "db:studio": "bun run --filter @airlinesim/db studio",
-    "db:seed": "bun run --filter @airlinesim/db seed"
+    "db:seed": "bun run --filter @airlinesim/db seed",
+    "exports:gen": "bun run --filter @airlinesim/aivents gen:exports"
   },
   "devDependencies": {
     "@types/bun": "latest",

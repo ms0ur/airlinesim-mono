@@ -31,7 +31,7 @@ const props = withDefaults(defineProps<Props>(), {
   center: () => [40, 25],
   zoom: 1.8,
   pitch: 30,
-  padding: () => ({ top: 40, bottom: 320, left: 0, right: 0 }),
+  padding: () => ({ top: 40, bottom: 40, left: 0, right: 0 }),
   projection: 'globe',
   offsetTop: 0
 })
