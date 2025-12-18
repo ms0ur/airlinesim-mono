@@ -1,4 +1,6 @@
 export * from './airports'
+export * from './countries'
+export * from './runways'
 export * from './airlines'
 export * from './aircraft-types'
 export * from './users'

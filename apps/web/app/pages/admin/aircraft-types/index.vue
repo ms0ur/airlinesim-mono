@@ -22,11 +22,9 @@ interface PaginatedResponse<T> {
   offset: number
 }
 
-const config = useRuntimeConfig()
-const apiBase = config.public.apiBase
-
-const { data: aircraftTypesResponse, refresh, status } = useLazyFetch<PaginatedResponse<AircraftType>>(`${apiBase}/aircraft-types`, {
-  query: { mode: 'all', limit: 50 }
+const { data: aircraftTypesResponse, refresh, status } = useApi<PaginatedResponse<AircraftType>>('/aircraft-types', {
+  query: { mode: 'all', limit: 50 },
+  lazy: true
 })
 
 const aircraftTypes = computed(() => aircraftTypesResponse.value?.data ?? [])
@@ -70,7 +68,8 @@ const isDeleting = ref(false)
 
 function getImageUrl(imageId: string | null | undefined): string | null {
   if (!imageId) return null
-  return `${apiBase}/uploads/${imageId}`
+  const config = useRuntimeConfig()
+  return `${config.public.apiBase}/uploads/${imageId}`
 }
 
 function handleFileSelect(event: Event) {
@@ -97,7 +96,7 @@ async function uploadImage(file: File): Promise<string | null> {
   formData.append('file', file)
 
   try {
-    const response = await $fetch<{ data: { id: string } }>(`${apiBase}/uploads`, {
+    const response = await $api<{ data: { id: string } }>('/uploads', {
       method: 'POST',
       body: formData
     })
@@ -118,7 +117,7 @@ async function createAircraftType() {
       if (id) imageId = id
     }
 
-    await $fetch(`${apiBase}/aircraft-types`, {
+    await $api('/aircraft-types', {
       method: 'POST',
       body: {
         ...newType,
@@ -183,7 +182,7 @@ async function saveEdit() {
       if (id) imageId = id
     }
 
-    await $fetch(`${apiBase}/aircraft-types/${editingType.value.id}`, {
+    await $api(`/aircraft-types/${editingType.value.id}`, {
       method: 'PATCH',
       body: {
         displayName: editForm.displayName,
@@ -221,7 +220,7 @@ async function deleteType() {
 
   isDeleting.value = true
   try {
-    await $fetch(`${apiBase}/aircraft-types/${deletingId.value}`, {
+    await $api(`/aircraft-types/${deletingId.value}`, {
       method: 'DELETE'
     })
     deletingId.value = null

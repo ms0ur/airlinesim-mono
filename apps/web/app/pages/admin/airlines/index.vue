@@ -38,18 +38,18 @@ interface AirportListResponse {
   offset: number
 }
 
-const config = useRuntimeConfig()
-const apiBase = config.public.apiBase
-
-// Use useLazyFetch for non-blocking parallel requests
-const { data: airlinesResponse, refresh: refreshAirlines, status: airlinesStatus } = useLazyFetch<PaginatedResponse<Airline>>(`${apiBase}/airlines`, {
-  query: { mode: 'all', limit: 50 }
+// Use useApi for non-blocking parallel requests
+const { data: airlinesResponse, refresh: refreshAirlines, status: airlinesStatus } = useApi<PaginatedResponse<Airline>>('/airlines', {
+  query: { mode: 'all', limit: 50 },
+  lazy: true
 })
-const { data: airportsResponse, status: airportsStatus } = useLazyFetch<AirportListResponse>(`${apiBase}/airports`, {
-  query: { mode: 'all', limit: 50 }
+const { data: airportsResponse, status: airportsStatus } = useApi<AirportListResponse>('/airports', {
+  query: { mode: 'all', limit: 50 },
+  lazy: true
 })
-const { data: usersResponse, status: usersStatus } = useLazyFetch<PaginatedResponse<User>>(`${apiBase}/users`, {
-  query: { mode: 'all', limit: 50 }
+const { data: usersResponse, status: usersStatus } = useApi<PaginatedResponse<User>>('/users', {
+  query: { mode: 'all', limit: 50 },
+  lazy: true
 })
 
 const airlines = computed(() => airlinesResponse.value?.data ?? [])
@@ -98,7 +98,7 @@ const isDeleting = ref(false)
 async function createAirline() {
   isCreating.value = true
   try {
-    await $fetch(`${apiBase}/airlines`, {
+    await $api('/airlines', {
       method: 'POST',
       body: {
         ...newAirline,
@@ -138,7 +138,7 @@ async function saveEdit() {
 
   isEditing.value = true
   try {
-    await $fetch(`${apiBase}/airlines/${editingAirline.value.id}`, {
+    await $api(`/airlines/${editingAirline.value.id}`, {
       method: 'PATCH',
       body: {
         name: editForm.name,
@@ -172,7 +172,7 @@ async function deleteAirline() {
 
   isDeleting.value = true
   try {
-    await $fetch(`${apiBase}/airlines/${deletingId.value}`, {
+    await $api(`/airlines/${deletingId.value}`, {
       method: 'DELETE'
     })
     deletingId.value = null

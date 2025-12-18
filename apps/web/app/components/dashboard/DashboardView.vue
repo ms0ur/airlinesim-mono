@@ -19,8 +19,6 @@ interface AirportResponse {
 }
 
 const { airline } = useAuth()
-const config = useRuntimeConfig()
-const apiBase = config.public.apiBase || 'http://localhost:3001'
 
 const aircraftCount = ref(0)
 const baseAirport = ref<AirportResponse | null>(null)
@@ -31,7 +29,7 @@ const sidebarsCollapsed = ref(false)
 const fetchAircraftCount = async () => {
   if (!airline.value) return
   try {
-    const response = await $fetch<{ data: any[]; total: number }>(`${apiBase}/airlines/${airline.value.id}/aircraft`, {
+    const response = await $api<{ data: any[]; total: number }>(`/airlines/${airline.value.id}/aircraft`, {
       credentials: 'include'
     })
     aircraftCount.value = response?.data?.length || 0
@@ -43,7 +41,7 @@ const fetchAircraftCount = async () => {
 const fetchBaseAirport = async () => {
   if (!airline.value?.baseAirportId) return
   try {
-    const response = await $fetch<{ data: AirportResponse }>(`${apiBase}/airports/${airline.value.baseAirportId}`, {
+    const response = await $api<{ data: AirportResponse }>(`/airports/${airline.value.baseAirportId}`, {
       credentials: 'include'
     })
     baseAirport.value = response.data

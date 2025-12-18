@@ -29,12 +29,10 @@ const emit = defineEmits<{
   select: [aircraft: AircraftType]
 }>()
 
-const config = useRuntimeConfig()
-const apiBase = config.public.apiBase
-
 function getImageUrl(imageId: string | null | undefined): string | null {
   if (!imageId) return null
-  return `${apiBase}/uploads/${imageId}`
+  const config = useRuntimeConfig()
+  return `${config.public.apiBase}/uploads/${imageId}`
 }
 
 function handleImageError(event: Event) {

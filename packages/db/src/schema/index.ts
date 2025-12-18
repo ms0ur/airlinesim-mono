@@ -1,5 +1,7 @@
 export * from './core/airlines';
 export * from './core/airports';
+export * from './core/countries';
+export * from './core/runways';
 export * from './core/users';
 export * from './core/uploads';
 export * from './fleet/aircraft-types';

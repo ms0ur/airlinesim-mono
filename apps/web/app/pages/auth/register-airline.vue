@@ -18,8 +18,6 @@ interface Airport {
 
 const { registerAirline, fetchUser } = useAuth()
 const router = useRouter()
-const config = useRuntimeConfig()
-const apiBase = config.public.apiBase || 'http://localhost:3001'
 
 const airlineName = ref('')
 const airlineCode = ref('')
@@ -42,7 +40,7 @@ const gameModeOptions = [
 
 const fetchAircraftTypes = async () => {
   try {
-    const response = await $fetch<{ data: AircraftType[]; total: number }>(`${apiBase}/aircraft-types`, {
+    const response = await $api<{ data: AircraftType[]; total: number }>('/aircraft-types', {
       params: { mode: 'all', limit: 10 }
     })
     if (response?.data) {
@@ -60,7 +58,7 @@ const searchAirports = async (query: string) => {
   }
   isSearchingAirports.value = true
   try {
-    const response = await $fetch<{ data: Airport[]; total: number }>(`${apiBase}/airports`, {
+    const response = await $api<{ data: Airport[]; total: number }>('/airports', {
       params: { mode: 'text', text: query, limit: 10 }
     })
     if (response?.data) {

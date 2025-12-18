@@ -22,7 +22,7 @@ const handleSubmit = async () => {
   error.value = ''
 
   try {
-    await $fetch('/api/aircraft-types/create', {
+    await $api('/aircraft-types/create', {
       method: 'POST',
       body: {
         ...form,

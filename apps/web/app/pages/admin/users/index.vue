@@ -16,11 +16,9 @@ interface UsersResponse {
   offset: number
 }
 
-const config = useRuntimeConfig()
-const apiBase = config.public.apiBase
-
-const { data: usersResponse, refresh, status } = useLazyFetch<UsersResponse>(`${apiBase}/users`, {
-  query: { mode: 'all', limit: 50 }
+const { data: usersResponse, refresh, status } = useApi<UsersResponse>('/users', {
+  query: { mode: 'all', limit: 50 },
+  lazy: true
 })
 
 const users = computed(() => usersResponse.value?.data ?? [])
@@ -50,7 +48,7 @@ const isDeleting = ref(false)
 async function createUser() {
   isCreating.value = true
   try {
-    await $fetch(`${apiBase}/users`, {
+    await $api('/users', {
       method: 'POST',
       body: newUser
     })
@@ -93,7 +91,7 @@ async function saveEdit() {
       body.password = editForm.password
     }
 
-    await $fetch(`${apiBase}/users/${editingUser.value.id}`, {
+    await $api(`/users/${editingUser.value.id}`, {
       method: 'PATCH',
       body
     })
@@ -121,7 +119,7 @@ async function deleteUser() {
 
   isDeleting.value = true
   try {
-    await $fetch(`${apiBase}/users/${deletingId.value}`, {
+    await $api(`/users/${deletingId.value}`, {
       method: 'DELETE'
     })
     deletingId.value = null

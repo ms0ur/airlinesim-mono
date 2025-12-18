@@ -19,11 +19,9 @@ interface AirportListResponse {
   offset: number
 }
 
-const config = useRuntimeConfig()
-const apiBase = config.public.apiBase
-
-const { data: airportsResponse, refresh, status } = useLazyFetch<AirportListResponse>(`${apiBase}/airports`, {
-  query: { mode: 'all', limit: 50 }
+const { data: airportsResponse, refresh, status } = useApi<AirportListResponse>('/airports', {
+  query: { mode: 'all', limit: 50 },
+  lazy: true
 })
 
 const airports = computed(() => airportsResponse.value?.items ?? [])
@@ -59,7 +57,7 @@ const isDeleting = ref(false)
 async function createAirport() {
   isCreating.value = true
   try {
-    await $fetch(`${apiBase}/airports`, {
+    await $api('/airports', {
       method: 'POST',
       body: {
         ...newAirport,
@@ -102,7 +100,7 @@ async function saveEdit() {
 
   isEditing.value = true
   try {
-    await $fetch(`${apiBase}/airports/${editingAirport.value.id}`, {
+    await $api(`/airports/${editingAirport.value.id}`, {
       method: 'PATCH',
       body: {
         name: editForm.name,
@@ -137,7 +135,7 @@ async function deleteAirport() {
 
   isDeleting.value = true
   try {
-    await $fetch(`${apiBase}/airports/${deletingId.value}`, {
+    await $api(`/airports/${deletingId.value}`, {
       method: 'DELETE'
     })
     deletingId.value = null

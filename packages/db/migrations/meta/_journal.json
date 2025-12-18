@@ -50,6 +50,13 @@
       "when": 1766096263103,
       "tag": "0006_add_fuel_prices",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1766078550855,
+      "tag": "0007_flawless_skin",
+      "breakpoints": true
     }
   ]
 }

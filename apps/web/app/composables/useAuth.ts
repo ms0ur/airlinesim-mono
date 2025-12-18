@@ -32,12 +32,10 @@ const state = reactive<AuthState>({
 })
 
 export const useAuth = () => {
-  const config = useRuntimeConfig()
-  const apiBase = config.public.apiBase || 'http://localhost:3001'
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await $fetch<boolean>(`${apiBase}/auth/login`, {
+      const response = await $api<boolean>('/auth/login', {
         method: 'POST',
         body: { email, password },
         credentials: 'include'
@@ -55,7 +53,7 @@ export const useAuth = () => {
 
   const register = async (username: string, email: string, password: string): Promise<{ success: boolean; userId?: string }> => {
     try {
-      const response = await $fetch<{ data: User }>(`${apiBase}/users`, {
+      const response = await $api<{ data: User }>('/users', {
         method: 'POST',
         body: { username, email, password }
       })
@@ -77,7 +75,7 @@ export const useAuth = () => {
     startingAircraftTypeId?: string
   }): Promise<boolean> => {
     try {
-      const response = await $fetch<{ data: Airline }>(`${apiBase}/airlines`, {
+      const response = await $api<{ data: Airline }>('/airlines', {
         method: 'POST',
         body: data,
         credentials: 'include'
@@ -95,7 +93,7 @@ export const useAuth = () => {
 
   const logout = async (): Promise<boolean> => {
     try {
-      await $fetch(`${apiBase}/auth/logout`, {
+      await $api('/auth/logout', {
         method: 'POST',
         credentials: 'include'
       })
@@ -112,7 +110,7 @@ export const useAuth = () => {
   const fetchUser = async () => {
     try {
       state.isLoading = true
-      const response = await $fetch<{ user: User; airline: Airline | null }>(`${apiBase}/auth/me`, {
+      const response = await $api<{ user: User; airline: Airline | null }>('/auth/me', {
         credentials: 'include'
       })
       if (response?.user) {

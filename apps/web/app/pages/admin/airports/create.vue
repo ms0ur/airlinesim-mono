@@ -20,7 +20,7 @@ const handleSubmit = async () => {
   error.value = ''
 
   try {
-    await $fetch('/api/airports/create', {
+    await $api('/airports/create', {
       method: 'POST',
       body: form
     })

@@ -1,10 +1,12 @@
 import { db, schema } from '@airlinesim/db/client';
 import { AirportCreate, AirportPublic, AirportUpdate } from '@airlinesim/db/zod';
-import {and, asc, count, eq, ilike, or, sql} from 'drizzle-orm';
+import { and, asc, count, eq, ilike, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 type AirportInsert = typeof schema.airports.$inferInsert;
 type AirportRow = typeof schema.airports.$inferSelect;
+type CountryInsert = typeof schema.countries.$inferInsert;
+type RunwayInsert = typeof schema.runways.$inferInsert;
 
 const AirportId = z.uuid();
 
@@ -23,30 +25,91 @@ const toAirportPublic = (row: Partial<AirportRow>) =>
     });
 
 export const airportRepo = {
+    upsertCountry: async (data: CountryInsert) => {
+        return await db.insert(schema.countries)
+            .values(data)
+            .onConflictDoUpdate({
+                target: schema.countries.code,
+                set: {
+                    name: data.name,
+                    continent: data.continent,
+                    wikipediaLink: data.wikipediaLink,
+                }
+            })
+            .returning();
+    },
+
+    upsertAirport: async (data: AirportInsert) => {
+        return await db.insert(schema.airports)
+            .values(data)
+            .onConflictDoUpdate({
+                target: schema.airports.icao,
+                set: pickDefined({
+                    iata: data.iata,
+                    name: data.name,
+                    lat: data.lat,
+                    lon: data.lon,
+                    timezone: data.timezone,
+                    type: data.type,
+                    continent: data.continent,
+                    isoCountry: data.isoCountry,
+                    isoRegion: data.isoRegion,
+                    municipality: data.municipality,
+                    gpsCode: data.gpsCode,
+                    localCode: data.localCode,
+                    elevationFt: data.elevationFt,
+                })
+            })
+            .returning();
+    },
+
+    upsertRunway: async (data: RunwayInsert) => {
+        return await db.insert(schema.runways)
+            .values(data)
+            .onConflictDoUpdate({
+                target: [schema.runways.airportId, schema.runways.ident],
+                set: {
+                    lengthFt: data.lengthFt,
+                    widthFt: data.widthFt,
+                    surface: data.surface,
+                    lighted: data.lighted,
+                    closed: data.closed,
+                    leIdent: data.leIdent,
+                    heIdent: data.heIdent,
+                    leLat: data.leLat,
+                    leLon: data.leLon,
+                    heLat: data.heLat,
+                    heLon: data.heLon,
+                }
+            })
+            .returning();
+    },
+
+    clearAllData: async () => {
+        return await db.transaction(async (tx) => {
+            await tx.delete(schema.runways);
+            await tx.delete(schema.airports);
+            await tx.delete(schema.countries);
+        });
+    },
+
+    findByIcao: async (icao: string) => {
+        const rows = await db.select().from(schema.airports).where(eq(schema.airports.icao, icao)).limit(1);
+        return rows[0] || null;
+    },
+
     create: async (data: z.infer<typeof AirportCreate>) => {
         try {
             const values: AirportInsert = {
+                ...data,
                 iata: data.iata as string,
                 icao: data.icao as string,
-                name: data.name,
-                timezone: data.timezone,
-                lat: data.lat as number,
-                lon: data.lon as number,
             };
 
             const [row] = await db
                 .insert(schema.airports)
                 .values(values)
-                .returning({
-                    id: schema.airports.id,
-                    iata: schema.airports.iata,
-                    icao: schema.airports.icao,
-                    name: schema.airports.name,
-                    lat: schema.airports.lat,
-                    lon: schema.airports.lon,
-                    timezone: schema.airports.timezone,
-                    createdAt: schema.airports.createdAt,
-                });
+                .returning();
 
             return toAirportPublic(row);
         } catch (e: any) {

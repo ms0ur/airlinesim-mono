@@ -38,6 +38,15 @@ export const AirportCreate = z.object({
     lat: NumberFromUserInput(-90, 90),
     lon: NumberFromUserInput(-180, 180),
     timezone: IanaTimezone,
+
+    type: z.string().max(32).default('small_airport'),
+    continent: z.string().length(2).nullable().optional(),
+    isoCountry: z.string().length(2).nullable().optional(),
+    isoRegion: z.string().max(10).nullable().optional(),
+    municipality: z.string().max(120).nullable().optional(),
+    gpsCode: z.string().max(10).nullable().optional(),
+    localCode: z.string().max(10).nullable().optional(),
+    elevationFt: z.number().nullable().optional(),
 });
 
 /**
@@ -52,6 +61,15 @@ export const AirportPublic = z.object({
     lon: z.number(),
     timezone: IanaTimezone,
     createdAt: z.string(),
+
+    type: z.string(),
+    continent: z.string().nullable().optional(),
+    isoCountry: z.string().nullable().optional(),
+    isoRegion: z.string().nullable().optional(),
+    municipality: z.string().nullable().optional(),
+    gpsCode: z.string().nullable().optional(),
+    localCode: z.string().nullable().optional(),
+    elevationFt: z.number().nullable().optional(),
 });
 
 /**
@@ -65,6 +83,15 @@ export const AirportUpdate = z.object({
     timezone: IanaTimezone.optional(),
     lat: NumberFromUserInput(-90, 90).optional(),
     lon: NumberFromUserInput(-180, 180).optional(),
+
+    type: z.string().max(32).optional(),
+    continent: z.string().length(2).nullable().optional(),
+    isoCountry: z.string().length(2).nullable().optional(),
+    isoRegion: z.string().max(10).nullable().optional(),
+    municipality: z.string().max(120).nullable().optional(),
+    gpsCode: z.string().max(10).nullable().optional(),
+    localCode: z.string().max(10).nullable().optional(),
+    elevationFt: z.number().nullable().optional(),
 });
 
 export const AirportWithDistance = AirportPublic.extend({

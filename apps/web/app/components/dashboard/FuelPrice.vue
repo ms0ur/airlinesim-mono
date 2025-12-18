@@ -11,9 +11,6 @@ interface FuelPriceResponse {
   nextUpdateAt: string
 }
 
-const config = useRuntimeConfig()
-const apiBase = config.public.apiBase || 'http://localhost:3001'
-
 const fuelData = ref<FuelPriceResponse | null>(null)
 const isLoading = ref(true)
 const countdown = ref('')
@@ -58,7 +55,7 @@ const displayedLabels = computed(() => {
 
 const fetchFuelPrices = async () => {
   try {
-    const response = await $fetch<FuelPriceResponse>(`${apiBase}/fuel`, {
+    const response = await $api<FuelPriceResponse>('/fuel', {
       credentials: 'include'
     })
     fuelData.value = response

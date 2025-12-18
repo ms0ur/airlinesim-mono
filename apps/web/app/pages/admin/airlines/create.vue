@@ -16,12 +16,12 @@ const error = ref('')
 const router = useRouter()
 
 // Fetch airports for selection
-const { data: airportsData } = await useFetch('/api/airports', {
+const { data: airportsData } = await useApi('/airports', {
   query: { mode: 'all', limit: 100 }
 })
 
 // Fetch users for selection
-const { data: usersData } = await useFetch('/api/users', {
+const { data: usersData } = await useApi('/users', {
   query: { mode: 'all', limit: 100 }
 })
 
@@ -44,7 +44,7 @@ const handleSubmit = async () => {
   error.value = ''
 
   try {
-    await $fetch('/api/airlines/create', {
+    await $api('/airlines/create', {
       method: 'POST',
       body: {
         ...form,

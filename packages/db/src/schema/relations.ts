@@ -8,6 +8,8 @@ import { aircraft } from './fleet/aircraft';
 import { routes } from './network/routes';
 import { schedules } from './network/schedules';
 import { flights } from './ops/flights';
+import { countries } from './core/countries';
+import { runways } from './core/runways';
 
 export const usersRelations = relations(users, ({ many }) => ({
     airlines: many(airlines),
@@ -22,6 +24,15 @@ export const airlinesRelations = relations(airlines, ({ one, many }) => ({
 export const airportsRelations = relations(airports, ({ many }) => ({
     originRoutes: many(routes, { relationName: 'origin' }),
     destinationRoutes: many(routes, { relationName: 'destination' }),
+    runways: many(runways),
+}));
+
+export const countriesRelations = relations(countries, ({ many }) => ({
+    airports: many(airports),
+}));
+
+export const runwaysRelations = relations(runways, ({ one }) => ({
+    airport: one(airports, { fields: [runways.airportId], references: [airports.id] }),
 }));
 
 export const aircraftTypesRelations = relations(aircraftTypes, ({ many }) => ({
@@ -30,25 +41,25 @@ export const aircraftTypesRelations = relations(aircraftTypes, ({ many }) => ({
 
 export const aircraftRelations = relations(aircraft, ({ one, many }) => ({
     airline: one(airlines, { fields: [aircraft.airlineId], references: [airlines.id] }),
-    type:    one(aircraftTypes, { fields: [aircraft.typeId], references: [aircraftTypes.id] }),
+    type: one(aircraftTypes, { fields: [aircraft.typeId], references: [aircraftTypes.id] }),
     flights: many(flights),
 }));
 
 export const routesRelations = relations(routes, ({ one, many }) => ({
     airline: one(airlines, { fields: [routes.airlineId], references: [airlines.id] }),
-    origin:  one(airports, { fields: [routes.originAirportId], references: [airports.id], relationName: 'origin' }),
+    origin: one(airports, { fields: [routes.originAirportId], references: [airports.id], relationName: 'origin' }),
     destination: one(airports, { fields: [routes.destinationAirportId], references: [airports.id], relationName: 'destination' }),
     schedules: many(schedules),
-    flights:   many(flights),
+    flights: many(flights),
 }));
 
 export const schedulesRelations = relations(schedules, ({ one, many }) => ({
-    route:   one(routes, { fields: [schedules.routeId], references: [routes.id] }),
+    route: one(routes, { fields: [schedules.routeId], references: [routes.id] }),
     flights: many(flights),
 }));
 
 export const flightsRelations = relations(flights, ({ one }) => ({
-    route:    one(routes,   { fields: [flights.routeId],   references: [routes.id] }),
-    schedule: one(schedules,{ fields: [flights.scheduleId],references: [schedules.id] }),
-    aircraft: one(aircraft, { fields: [flights.aircraftId],references: [aircraft.id] }),
+    route: one(routes, { fields: [flights.routeId], references: [routes.id] }),
+    schedule: one(schedules, { fields: [flights.scheduleId], references: [schedules.id] }),
+    aircraft: one(aircraft, { fields: [flights.aircraftId], references: [aircraft.id] }),
 }));

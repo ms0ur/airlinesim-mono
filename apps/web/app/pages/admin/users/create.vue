@@ -17,7 +17,7 @@ const handleSubmit = async () => {
   error.value = ''
 
   try {
-    await $fetch('/api/users/create', {
+    await $api('/users/create', {
       method: 'POST',
       body: form
     })
