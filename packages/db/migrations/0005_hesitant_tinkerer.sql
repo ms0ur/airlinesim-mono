@@ -1,0 +1,1 @@
+ALTER TABLE "airports" ALTER COLUMN "iata" DROP NOT NULL;

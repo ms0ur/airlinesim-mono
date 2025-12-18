@@ -119,15 +119,28 @@ export const importService = {
         const csv = await response.text();
 
         const results = Papa.parse(csv, { header: true, skipEmptyLines: true });
-        const rows = (results.data as any[]).filter(r => r.iata_code || r.ident);
+
+        // Filter criteria:
+        // 1. Must be large or medium airport
+        // 2. Ident (ICAO) must be exactly 4 uppercase letters (excludes local 3-char codes and codes with digits like 4A2)
+        // 3. IATA (if present) must be 3 uppercase letters
+        const rows = (results.data as any[]).filter(row => {
+            const isMajor = ['large_airport', 'medium_airport'].includes(row.type);
+            const ident = row.ident || '';
+            const iata = row.iata_code || '';
+
+            const isStandardICAO = /^[A-Z]{4}$/.test(ident);
+            const isStandardIATA = iata === '' || /^[A-Z]{3}$/.test(iata);
+
+            return isMajor && isStandardICAO && isStandardIATA;
+        });
+
         currentStatus.total = rows.length;
-        console.log(`[Import] Fetched ${rows.length} airports (filtered).`);
+        console.log(`[Import] Fetched ${rows.length} airports (filtered to major/standard).`);
 
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
 
-            // Validation: skip if required fields are missing
-            // We need ident (ICAO), name, lat and lon for basic functionality
             if (!row.ident || !row.name || !row.latitude_deg || !row.longitude_deg) continue;
 
             const lat = parseFloat(row.latitude_deg);
@@ -153,14 +166,13 @@ export const importService = {
                     elevationFt: row.elevation_ft ? parseInt(row.elevation_ft) : null,
                 });
             } catch (e: any) {
-                // Skip if upsert fails (e.g. database constraints)
-                if (i % 1000 === 0) {
+                if (i % 100 === 0) {
                     console.warn(`[Import] Skipping airport ${row.ident} due to error: ${e.message}`);
                 }
             }
 
             currentStatus.progress = i + 1;
-            if (i % 1000 === 0) {
+            if (i % 100 === 0) {
                 currentStatus.message = `Importing airports: ${i + 1}/${rows.length}`;
                 console.log(`[Import] Airports progress: ${i + 1}/${rows.length}`);
             }

@@ -12,7 +12,7 @@ const geometry = customType<{ data: unknown }>({
 export const airports = pgTable('airports', {
     id: uuid('id').defaultRandom().primaryKey(),
 
-    iata: varchar('iata', { length: 3 }).notNull(),
+    iata: varchar('iata', { length: 3 }),
     icao: varchar('icao', { length: 4 }).notNull(),
 
     name: varchar('name', { length: 120 }).notNull(),

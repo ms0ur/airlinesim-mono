@@ -13,18 +13,36 @@ interface Airport {
 }
 
 interface AirportListResponse {
-  items: Airport[]
+  data: Airport[]
   total: number
   limit: number
   offset: number
 }
 
+const searchQuery = ref('')
+const limit = ref(50)
+const currentPage = ref(1)
+
+const offset = computed(() => (currentPage.value - 1) * limit.value)
+
 const { data: airportsResponse, refresh, status } = useApi<AirportListResponse>('/airports', {
-  query: { mode: 'all', limit: 50 },
+  query: computed(() => ({
+    mode: searchQuery.value ? 'text' : 'all',
+    text: searchQuery.value,
+    limit: limit.value,
+    offset: offset.value
+  })),
+  watch: [currentPage, limit],
   lazy: true
 })
 
-const airports = computed(() => airportsResponse.value?.items ?? [])
+watch(searchQuery, () => {
+  currentPage.value = 1
+})
+
+const airports = computed(() => airportsResponse.value?.data ?? [])
+const total = computed(() => airportsResponse.value?.total ?? 0)
+const totalPages = computed(() => Math.ceil(total.value / limit.value))
 const isLoading = computed(() => status.value === 'pending')
 
 const newAirport = reactive({
@@ -178,6 +196,10 @@ async function deleteAirport() {
     </div>
 
     <!-- Airports List -->
+    <div class="mb-4">
+      <Input v-model="searchQuery" placeholder="Search by name, IATA, ICAO or timezone..." />
+    </div>
+
     <div class="bg-surface rounded-xl border border-border overflow-hidden">
       <div v-if="isLoading" class="p-8 text-center text-text-muted">Loading...</div>
       <table v-else class="w-full text-left border-collapse">
@@ -221,6 +243,34 @@ async function deleteAirport() {
           </tr>
         </tbody>
       </table>
+
+      <!-- Pagination Controls -->
+      <div v-if="totalPages > 1" class="p-4 bg-surface-subtle border-t border-border flex items-center justify-between">
+        <div class="text-caption text-text-muted">
+          Showing {{ offset + 1 }} to {{ Math.min(offset + limit, total) }} of {{ total }} entries
+        </div>
+        <div class="flex gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            :disabled="currentPage === 1"
+            @click="currentPage--"
+          >
+            Previous
+          </Button>
+          <div class="flex items-center px-4 text-body font-medium text-text-primary">
+            Page {{ currentPage }} of {{ totalPages }}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            :disabled="currentPage === totalPages"
+            @click="currentPage++"
+          >
+            Next
+          </Button>
+        </div>
+      </div>
     </div>
 
     <!-- Edit Modal -->
