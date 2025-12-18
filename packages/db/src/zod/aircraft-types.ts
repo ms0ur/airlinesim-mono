@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 const IcaoCode = z.string().regex(/^[A-Z0-9]{2,4}$/, 'ICAO: 2–4 символа A–Z/0–9');
 const IataCode = z.string().regex(/^[A-Z0-9]{3}$/, 'IATA: 3 символа A–Z/0–9');
-const Name120  = z.string().min(1).max(120);
-const PosInt   = z.number().int().positive();
+const Name120 = z.string().min(1).max(120);
+const PosInt = z.number().int().positive();
 
 export const AircraftTypeCreate = z.object({
     displayName: Name120,
@@ -11,7 +11,7 @@ export const AircraftTypeCreate = z.object({
     model: Name120,
 
     icao: IcaoCode,
-    iata: IataCode.optional(),
+    iata: IataCode.nullable().optional(),
 
     imageId: z.uuid().optional(),
 

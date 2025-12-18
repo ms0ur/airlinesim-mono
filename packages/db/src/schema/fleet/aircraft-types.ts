@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, integer, timestamp, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, integer, timestamp, jsonb, uniqueIndex } from 'drizzle-orm/pg-core';
 import { uploads } from '../core/uploads';
 
 export const aircraftTypes = pgTable('aircraft_types', {
@@ -20,4 +20,6 @@ export const aircraftTypes = pgTable('aircraft_types', {
     characteristics: jsonb('characteristics').$type<Record<string, unknown>>(),
 
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-});
+}, (t) => [
+    uniqueIndex('aircraft_types_icao_uq').on(t.icao),
+]);

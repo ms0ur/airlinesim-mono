@@ -2,12 +2,39 @@ import { db, schema } from '@airlinesim/db/client';
 
 import { AircraftTypeCreate, AircraftTypeUpdate, AircraftTypePublic } from "@airlinesim/db/zod";
 
-import {eq, ilike, or, sql} from 'drizzle-orm';
+import { eq, ilike, or, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 type AircraftTypeInsert = typeof schema.aircraftTypes.$inferInsert;
 
 export const aircraftTypeRepo = {
+    clearAllData: async () => {
+        try {
+            await db.delete(schema.aircraftTypes);
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    upsertAircraftType: async (data: AircraftTypeInsert) => {
+        try {
+            const [row] = await db
+                .insert(schema.aircraftTypes)
+                .values(data)
+                .onConflictDoUpdate({
+                    target: schema.aircraftTypes.icao,
+                    set: data,
+                })
+                .returning();
+
+            return AircraftTypePublic.parse({
+                ...row,
+                createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
+            });
+        } catch (error) {
+            throw error;
+        }
+    },
     createType: async (data: z.infer<typeof AircraftTypeCreate>) => {
         const values: AircraftTypeInsert = {
             displayName: data.displayName,
@@ -26,19 +53,19 @@ export const aircraftTypeRepo = {
                 .insert(schema.aircraftTypes)
                 .values(values)
                 .returning({
-                        id: schema.aircraftTypes.id,
-                        displayName: schema.aircraftTypes.displayName,
-                        manufacturer: schema.aircraftTypes.manufacturer,
-                        model: schema.aircraftTypes.model,
-                        icao: schema.aircraftTypes.icao,
-                        iata: schema.aircraftTypes.iata,
-                        imageId: schema.aircraftTypes.imageId,
-                        rangeKm: schema.aircraftTypes.rangeKm,
-                        cruisingSpeedKph: schema.aircraftTypes.cruisingSpeedKph,
-                        seatCapacity: schema.aircraftTypes.seatCapacity,
-                        characteristics: schema.aircraftTypes.characteristics,
-                        createdAt: schema.aircraftTypes.createdAt,
-                    }
+                    id: schema.aircraftTypes.id,
+                    displayName: schema.aircraftTypes.displayName,
+                    manufacturer: schema.aircraftTypes.manufacturer,
+                    model: schema.aircraftTypes.model,
+                    icao: schema.aircraftTypes.icao,
+                    iata: schema.aircraftTypes.iata,
+                    imageId: schema.aircraftTypes.imageId,
+                    rangeKm: schema.aircraftTypes.rangeKm,
+                    cruisingSpeedKph: schema.aircraftTypes.cruisingSpeedKph,
+                    seatCapacity: schema.aircraftTypes.seatCapacity,
+                    characteristics: schema.aircraftTypes.characteristics,
+                    createdAt: schema.aircraftTypes.createdAt,
+                }
                 );
             return AircraftTypePublic.parse({
                 ...row,
@@ -66,7 +93,7 @@ export const aircraftTypeRepo = {
             throw e;
         }
     },
-    find: async (filter="", limit=10, offset=0) => {
+    find: async (filter = "", limit = 10, offset = 0) => {
         try {
             const [rows, [{ count }]] = await Promise.all([
                 db

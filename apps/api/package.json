@@ -17,11 +17,13 @@
     "nitropack": "^2.12.4"
   },
   "dependencies": {
+    "@types/js-yaml": "^4.0.9",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.2",
     "drizzle-orm": "^0.44.5",
     "geo-tz": "^8.1.4",
     "jose": "^6.1.2",
+    "js-yaml": "^4.1.1",
     "papaparse": "^5.5.3",
     "pg": "^8.16.3",
     "zod": "^4.1.11"

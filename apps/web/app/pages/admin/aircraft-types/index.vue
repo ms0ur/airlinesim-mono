@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Button from '~/components/ui/Button.vue'
 import Input from '~/components/ui/Input.vue'
+import AircraftTypeDetailsModal from '~/components/admin/AircraftTypeDetailsModal.vue'
 
 interface AircraftType {
   id: string
@@ -13,6 +14,7 @@ interface AircraftType {
   rangeKm: number
   cruisingSpeedKph: number
   seatCapacity: number
+  characteristics?: any
 }
 
 interface PaginatedResponse<T> {
@@ -22,13 +24,35 @@ interface PaginatedResponse<T> {
   offset: number
 }
 
+const limit = 50
+const offset = ref(0)
+const filter = ref('')
+
 const { data: aircraftTypesResponse, refresh, status } = useApi<PaginatedResponse<AircraftType>>('/aircraft-types', {
-  query: { mode: 'all', limit: 50 },
+  query: computed(() => ({ 
+    mode: 'all', 
+    limit, 
+    offset: offset.value,
+    filter: filter.value 
+  })),
+  watch: [offset, filter],
   lazy: true
 })
 
 const aircraftTypes = computed(() => aircraftTypesResponse.value?.data ?? [])
+const total = computed(() => aircraftTypesResponse.value?.total ?? 0)
 const isLoading = computed(() => status.value === 'pending')
+
+const currentPage = computed(() => Math.floor(offset.value / limit) + 1)
+const totalPages = computed(() => Math.ceil(total.value / limit))
+
+function next() {
+  if (offset.value + limit < total.value) offset.value += limit
+}
+
+function prev() {
+  if (offset.value >= limit) offset.value -= limit
+}
 
 const newType = reactive({
   displayName: '',
@@ -45,6 +69,9 @@ const isCreating = ref(false)
 const selectedFile = ref<File | null>(null)
 const imagePreview = ref<string | null>(null)
 const uploadedImageId = ref<string | null>(null)
+
+// Details mode
+const viewingType = ref<AircraftType | null>(null)
 
 // Edit mode
 const editingType = ref<AircraftType | null>(null)
@@ -236,7 +263,13 @@ async function deleteType() {
 
 <template>
   <div>
-    <h2 class="text-h4 text-primary mb-6">Aircraft Types Management</h2>
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-h4 text-primary">Aircraft Types Management</h2>
+      <div class="flex gap-4 items-center">
+        <Input v-model="filter" placeholder="Filter by Name, ICAO..." class="max-w-xs" />
+        <span class="text-caption text-text-muted">Total: {{ total }}</span>
+      </div>
+    </div>
 
     <!-- Create Aircraft Type Form -->
     <div class="bg-surface p-6 rounded-xl border border-border mb-8">
@@ -294,10 +327,10 @@ async function deleteType() {
         <div
           v-for="type in aircraftTypes"
           :key="type.id"
-          class="bg-surface-subtle rounded-xl p-4 border border-border hover:border-primary transition-colors"
+          class="bg-surface-subtle rounded-xl p-4 border border-border hover:border-primary transition-all flex flex-col"
         >
           <!-- Image -->
-          <div class="aspect-video bg-background rounded-lg overflow-hidden mb-3">
+          <div class="aspect-video bg-background rounded-lg overflow-hidden mb-3 group relative">
             <img
               v-if="type.imageId"
               :src="getImageUrl(type.imageId)!"
@@ -305,7 +338,13 @@ async function deleteType() {
               class="w-full h-full object-cover"
             />
             <div v-else class="w-full h-full flex items-center justify-center text-text-muted">
-              <span class="text-4xl">✈️</span>
+              <span class="text-4xl text-opacity-50">✈️</span>
+            </div>
+            
+            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+               <button @click="viewingType = type" class="px-4 py-2 bg-white text-black rounded-lg font-semibold text-caption">
+                  View Specs
+               </button>
             </div>
           </div>
 
@@ -314,14 +353,14 @@ async function deleteType() {
           <p class="text-caption text-text-muted mb-2">{{ type.manufacturer }} {{ type.model }}</p>
 
           <div class="flex gap-2 mb-2">
-            <span class="font-mono bg-background px-2 py-1 rounded text-xs text-text-primary">{{ type.icao }}</span>
-            <span v-if="type.iata" class="font-mono bg-background px-2 py-1 rounded text-xs text-text-primary">{{ type.iata }}</span>
+            <span class="font-mono bg-background px-2 py-1 rounded text-xs text-text-primary border border-border/50">{{ type.icao }}</span>
+            <span v-if="type.iata" class="font-mono bg-background px-2 py-1 rounded text-xs text-text-primary border border-border/50">{{ type.iata }}</span>
           </div>
 
-          <div class="text-caption text-text-muted space-y-1">
-            <div>Range: {{ type.rangeKm.toLocaleString() }} km</div>
-            <div>Speed: {{ type.cruisingSpeedKph.toLocaleString() }} km/h</div>
-            <div>Seats: {{ type.seatCapacity }}</div>
+          <div class="text-caption text-text-muted space-y-1 flex-1">
+            <div class="flex justify-between"><span>Range:</span> <span class="text-text-primary font-medium">{{ type.rangeKm.toLocaleString() }} km</span></div>
+            <div class="flex justify-between"><span>Speed:</span> <span class="text-text-primary font-medium">{{ type.cruisingSpeedKph.toLocaleString() }} km/h</span></div>
+            <div class="flex justify-between"><span>Seats:</span> <span class="text-text-primary font-medium">{{ type.seatCapacity }}</span></div>
           </div>
 
           <!-- Action Buttons -->
@@ -334,7 +373,7 @@ async function deleteType() {
             </button>
             <button
               @click="confirmDelete(type.id)"
-              class="px-3 py-2 bg-red-500/10 text-red-500 rounded-lg text-caption font-medium hover:bg-red-500 hover:text-white transition-colors"
+              class="px-3 py-2 bg-error-soft text-error rounded-lg text-caption font-medium hover:bg-error hover:text-white transition-colors border border-error/10"
             >
               Delete
             </button>
@@ -345,7 +384,25 @@ async function deleteType() {
           No aircraft types found.
         </div>
       </div>
+
+      <!-- Pagination Footer -->
+      <div v-if="totalPages > 1" class="border-t border-border p-4 flex items-center justify-between bg-surface-subtle">
+        <span class="text-caption text-text-muted">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+        <div class="flex gap-2">
+          <Button size="sm" variant="ghost" :disabled="offset === 0" @click="prev">Previous</Button>
+          <Button size="sm" variant="ghost" :disabled="offset + limit >= total" @click="next">Next</Button>
+        </div>
+      </div>
     </div>
+
+    <!-- Details Modal -->
+    <AircraftTypeDetailsModal 
+      :show="!!viewingType" 
+      :aircraft-type="viewingType" 
+      @close="viewingType = null" 
+    />
 
     <!-- Edit Modal -->
     <Teleport to="body">
@@ -415,4 +472,5 @@ async function deleteType() {
     </Teleport>
   </div>
 </template>
+
 
