@@ -44,7 +44,7 @@ const toggleCollapse = () => {
 </script>
 
 <template>
-  <div class="bg-surface rounded-xl border border-border overflow-hidden transition-all duration-300">
+  <div class="overflow-hidden transition-all duration-300">
     <div
       class="flex items-center justify-between p-4 cursor-pointer hover:bg-surface-subtle transition-colors"
       @click="toggleCollapse"

@@ -106,7 +106,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="bg-surface rounded-xl border border-border p-6">
+  <div class="p-0">
     <div class="flex items-center justify-between mb-2">
       <h3 class="text-h4 text-text-primary">Fuel price</h3>
       <span v-if="countdown" class="text-caption text-text-muted">

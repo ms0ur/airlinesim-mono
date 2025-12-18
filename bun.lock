@@ -27,6 +27,7 @@
       },
       "devDependencies": {
         "@airlinesim/airror": "workspace:*",
+        "@airlinesim/aivents": "workspace:*",
         "@airlinesim/db": "workspace:*",
         "@airlinesim/shared": "workspace:*",
         "@types/bcryptjs": "^3.0.0",
@@ -59,7 +60,7 @@
       "version": "0.0.1",
     },
     "packages/aivents": {
-      "name": "@airlinesim/aivent",
+      "name": "@airlinesim/aivents",
       "version": "0.0.1",
     },
     "packages/db": {
@@ -84,7 +85,7 @@
   "packages": {
     "@airlinesim/airror": ["@airlinesim/airror@workspace:packages/airror"],
 
-    "@airlinesim/aivent": ["@airlinesim/aivent@workspace:packages/aivents"],
+    "@airlinesim/aivents": ["@airlinesim/aivents@workspace:packages/aivents"],
 
     "@airlinesim/db": ["@airlinesim/db@workspace:packages/db"],
 

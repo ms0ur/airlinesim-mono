@@ -1,6 +1,6 @@
 import { defineEventHandler, readBody } from 'h3';
 import { airror } from '@airlinesim/airror';
-import { createEventSchema } from '@airlinesim/db/zod/events';
+import { createEventSchema } from '@airlinesim/db/zod';
 import { eventsRepo } from '../repo/eventsRepo';
 
 export default defineEventHandler(async (event) => {

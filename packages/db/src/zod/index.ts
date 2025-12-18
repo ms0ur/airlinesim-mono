@@ -4,3 +4,5 @@ export * from './aircraft-types'
 export * from './users'
 export * from './auth'
 export * from './fuel-prices'
+export * from './events'
+

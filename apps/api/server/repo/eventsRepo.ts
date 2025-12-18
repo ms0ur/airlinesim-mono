@@ -1,8 +1,8 @@
 import { db, schema } from '@airlinesim/db/client';
 import { and, desc, eq, gt, lte } from 'drizzle-orm';
 import { airror } from '@airlinesim/airror';
-import { eventRegistry } from '@airlinesim/aivents/events/registry';
-import type { CreateEventInput } from '@airlinesim/db/zod/events';
+import { eventRegistry } from '@airlinesim/aivents';
+import type { CreateEventInput } from '@airlinesim/db/zod';
 import { WORLD_ID } from '../constants/world';
 
 function addHours(d: Date, hours: number) {
@@ -24,7 +24,7 @@ export const eventsRepo = {
      */
     create: async (input: CreateEventInput) => {
         const spec = (eventRegistry as Record<string, any>)[input.eventId];
-        if (!spec) throw airror('VALIDATION_ERROR', { message: `Unknown eventId: ${input.eventId}` });
+        if (!spec) throw airror('VALIDATION_ERROR', { messages: { en: `Unknown eventId: ${input.eventId}` } });
 
         const payload = spec.payloadSchema.parse(input.payload);
         const def = spec.define(payload);

@@ -13,7 +13,7 @@ const news = ref<NewsItem[]>([
 </script>
 
 <template>
-  <div class="bg-surface rounded-xl border border-border p-6">
+  <div class="p-0">
     <h3 class="text-h4 text-text-primary mb-4">Latest news</h3>
 
     <ul class="space-y-3">
