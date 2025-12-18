@@ -44,9 +44,13 @@ export const AirportCreate = z.object({
     isoCountry: z.string().length(2).nullable().optional(),
     isoRegion: z.string().max(10).nullable().optional(),
     municipality: z.string().max(120).nullable().optional(),
+    scheduledService: z.string().max(10).default('no'),
     gpsCode: z.string().max(10).nullable().optional(),
     localCode: z.string().max(10).nullable().optional(),
     elevationFt: z.number().nullable().optional(),
+    homeLink: z.string().nullable().optional(),
+    wikipediaLink: z.string().nullable().optional(),
+    keywords: z.string().nullable().optional(),
 });
 
 /**
@@ -67,9 +71,13 @@ export const AirportPublic = z.object({
     isoCountry: z.string().nullable().optional(),
     isoRegion: z.string().nullable().optional(),
     municipality: z.string().nullable().optional(),
+    scheduledService: z.string(),
     gpsCode: z.string().nullable().optional(),
     localCode: z.string().nullable().optional(),
     elevationFt: z.number().nullable().optional(),
+    homeLink: z.string().nullable().optional(),
+    wikipediaLink: z.string().nullable().optional(),
+    keywords: z.string().nullable().optional(),
 });
 
 /**
@@ -77,7 +85,7 @@ export const AirportPublic = z.object({
  */
 export const AirportUpdate = z.object({
     id: UUID,
-    iata: UpperOpt(IATA3.optional()),
+    iata: UpperOpt(IATA3.optional().nullable()),
     icao: UpperOpt(ICAO4.optional()),
     name: z.string().min(2).max(120).trim().optional(),
     timezone: IanaTimezone.optional(),
@@ -89,9 +97,13 @@ export const AirportUpdate = z.object({
     isoCountry: z.string().length(2).nullable().optional(),
     isoRegion: z.string().max(10).nullable().optional(),
     municipality: z.string().max(120).nullable().optional(),
+    scheduledService: z.string().max(10).optional(),
     gpsCode: z.string().max(10).nullable().optional(),
     localCode: z.string().max(10).nullable().optional(),
     elevationFt: z.number().nullable().optional(),
+    homeLink: z.string().nullable().optional(),
+    wikipediaLink: z.string().nullable().optional(),
+    keywords: z.string().nullable().optional(),
 });
 
 export const AirportWithDistance = AirportPublic.extend({

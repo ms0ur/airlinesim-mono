@@ -4,6 +4,7 @@ export * from './core/countries';
 export * from './core/runways';
 export * from './core/users';
 export * from './core/uploads';
+export * from './core/regions';
 export * from './fleet/aircraft-types';
 export * from './fleet/aircraft';
 export * from './network/routes';

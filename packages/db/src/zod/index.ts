@@ -7,4 +7,5 @@ export * from './users'
 export * from './auth'
 export * from './fuel-prices'
 export * from './events'
+export * from './regions'
 

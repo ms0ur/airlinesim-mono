@@ -6,6 +6,7 @@ import { z } from 'zod';
 type AirportInsert = typeof schema.airports.$inferInsert;
 type AirportRow = typeof schema.airports.$inferSelect;
 type CountryInsert = typeof schema.countries.$inferInsert;
+type RegionInsert = typeof schema.regions.$inferInsert;
 type RunwayInsert = typeof schema.runways.$inferInsert;
 
 const AirportId = z.uuid();
@@ -24,9 +25,13 @@ const airportPublicFields = {
     isoCountry: schema.airports.isoCountry,
     isoRegion: schema.airports.isoRegion,
     municipality: schema.airports.municipality,
+    scheduledService: schema.airports.scheduledService,
     gpsCode: schema.airports.gpsCode,
     localCode: schema.airports.localCode,
     elevationFt: schema.airports.elevationFt,
+    homeLink: schema.airports.homeLink,
+    wikipediaLink: schema.airports.wikipediaLink,
+    keywords: schema.airports.keywords,
 };
 
 const pickDefined = <T extends Record<string, unknown>>(obj: T) =>
@@ -58,6 +63,23 @@ export const airportRepo = {
             .returning();
     },
 
+    upsertRegion: async (data: RegionInsert) => {
+        return await db.insert(schema.regions)
+            .values(data)
+            .onConflictDoUpdate({
+                target: schema.regions.code,
+                set: {
+                    localCode: data.localCode,
+                    name: data.name,
+                    continent: data.continent,
+                    isoCountry: data.isoCountry,
+                    wikipediaLink: data.wikipediaLink,
+                    keywords: data.keywords,
+                }
+            })
+            .returning();
+    },
+
     upsertAirport: async (data: AirportInsert) => {
         return await db.insert(schema.airports)
             .values(data)
@@ -74,9 +96,13 @@ export const airportRepo = {
                     isoCountry: data.isoCountry,
                     isoRegion: data.isoRegion,
                     municipality: data.municipality,
+                    scheduledService: data.scheduledService,
                     gpsCode: data.gpsCode,
                     localCode: data.localCode,
                     elevationFt: data.elevationFt,
+                    homeLink: data.homeLink,
+                    wikipediaLink: data.wikipediaLink,
+                    keywords: data.keywords,
                 })
             })
             .returning();
@@ -108,6 +134,7 @@ export const airportRepo = {
         return await db.transaction(async (tx) => {
             await tx.delete(schema.runways);
             await tx.delete(schema.airports);
+            await tx.delete(schema.regions);
             await tx.delete(schema.countries);
         });
     },
@@ -189,16 +216,7 @@ export const airportRepo = {
         try {
             AirportId.parse(id);
             const rows = await db
-                .select({
-                    id: schema.airports.id,
-                    iata: schema.airports.iata,
-                    icao: schema.airports.icao,
-                    name: schema.airports.name,
-                    lat: schema.airports.lat,
-                    lon: schema.airports.lon,
-                    timezone: schema.airports.timezone,
-                    createdAt: schema.airports.createdAt,
-                })
+                .select(airportPublicFields)
                 .from(schema.airports)
                 .where(eq(schema.airports.id, id))
                 .limit(1);
@@ -234,16 +252,7 @@ export const airportRepo = {
 
         const [rows, [{ total }]] = await Promise.all([
             db
-                .select({
-                    id: schema.airports.id,
-                    iata: schema.airports.iata,
-                    icao: schema.airports.icao,
-                    name: schema.airports.name,
-                    lat: schema.airports.lat,
-                    lon: schema.airports.lon,
-                    timezone: schema.airports.timezone,
-                    createdAt: schema.airports.createdAt,
-                })
+                .select(airportPublicFields)
                 .from(schema.airports)
                 .where(where)
                 .orderBy(asc(schema.airports.name))

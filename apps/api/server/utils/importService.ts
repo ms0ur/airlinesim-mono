@@ -4,9 +4,10 @@ import { getTimezone } from './timezone';
 import type { ImportStatus } from '@airlinesim/shared';
 
 const DATA_URLS = {
-    countries: 'https://raw.githubusercontent.com/davidmegginson/ourairports-data/master/countries.csv',
-    airports: 'https://raw.githubusercontent.com/davidmegginson/ourairports-data/master/airports.csv',
-    runways: 'https://raw.githubusercontent.com/davidmegginson/ourairports-data/master/runways.csv',
+    countries: 'https://davidmegginson.github.io/ourairports-data/countries.csv',
+    regions: 'https://davidmegginson.github.io/ourairports-data/regions.csv',
+    airports: 'https://davidmegginson.github.io/ourairports-data/airports.csv',
+    runways: 'https://davidmegginson.github.io/ourairports-data/runways.csv',
 };
 
 
@@ -46,10 +47,13 @@ export const importService = {
                 // 1. Countries
                 await importService.importCountries();
 
-                // 2. Airports
+                // 2. Regions
+                await importService.importRegions();
+
+                // 3. Airports
                 await importService.importAirports();
 
-                // 3. Runways
+                // 4. Runways
                 await importService.importRunways();
 
                 currentStatus = {
@@ -88,7 +92,6 @@ export const importService = {
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
 
-            // Validation: skip if required fields are missing
             if (!row.code || !row.name) continue;
 
             try {
@@ -111,37 +114,84 @@ export const importService = {
         console.log('[Import] Countries import finished.');
     },
 
+    importRegions: async () => {
+        currentStatus.step = 'regions';
+        currentStatus.message = 'Fetching regions...';
+        console.log('[Import] Phase 2: Importing regions...');
+        const response = await fetch(DATA_URLS.regions);
+        const csv = await response.text();
+
+        const results = Papa.parse(csv, { header: true, skipEmptyLines: true });
+        const rows = results.data as any[];
+        currentStatus.total = rows.length;
+        console.log(`[Import] Fetched ${rows.length} regions.`);
+
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+
+            if (!row.code || !row.name) continue;
+
+            try {
+                await airportRepo.upsertRegion({
+                    code: row.code,
+                    localCode: row.local_code,
+                    name: row.name,
+                    continent: row.continent,
+                    isoCountry: row.iso_country,
+                    wikipediaLink: row.wikipedia_link,
+                    keywords: row.keywords,
+                });
+            } catch (e: any) {
+                console.warn(`[Import] Skipping region ${row.code} due to error: ${e.message}`);
+            }
+
+            currentStatus.progress = i + 1;
+            if (i % 500 === 0) {
+                currentStatus.message = `Importing regions: ${i + 1}/${rows.length}`;
+                console.log(`[Import] Regions progress: ${i + 1}/${rows.length}`);
+            }
+        }
+        console.log('[Import] Regions import finished.');
+    },
+
     importAirports: async () => {
         currentStatus.step = 'airports';
         currentStatus.message = 'Fetching airports...';
-        console.log('[Import] Phase 2: Importing airports...');
+        console.log('[Import] Phase 3: Importing airports...');
         const response = await fetch(DATA_URLS.airports);
         const csv = await response.text();
 
         const results = Papa.parse(csv, { header: true, skipEmptyLines: true });
 
         // Filter criteria:
-        // 1. Must be large or medium airport
-        // 2. Ident (ICAO) must be exactly 4 uppercase letters (excludes local 3-char codes and codes with digits like 4A2)
-        // 3. IATA (if present) must be 3 uppercase letters
+        // 1. Must have a valid 4-letter ICAO (ident or gps_code)
+        // 2. IATA (if present) must be 3 uppercase letters
         const rows = (results.data as any[]).filter(row => {
-            const isMajor = ['large_airport', 'medium_airport'].includes(row.type);
-            const ident = row.ident || '';
-            const iata = row.iata_code || '';
+            const ident = (row.ident || '').toUpperCase();
+            const gpsCode = (row.gps_code || '').toUpperCase();
+            const iata = (row.iata_code || '').toUpperCase();
 
-            const isStandardICAO = /^[A-Z]{4}$/.test(ident);
+            // We prefer gps_code if it's a valid 4-letter ICAO, otherwise ident
+            const validIcao = /^[A-Z]{4}$/.test(gpsCode) ? gpsCode : (/^[A-Z]{4}$/.test(ident) ? ident : null);
             const isStandardIATA = iata === '' || /^[A-Z]{3}$/.test(iata);
 
-            return isMajor && isStandardICAO && isStandardIATA;
+            // We also want to prioritize commercial/scheduled or at least medium-large
+            const isMajor = ['large_airport', 'medium_airport', 'small_airport'].includes(row.type);
+
+            return validIcao && isMajor && isStandardIATA;
         });
 
         currentStatus.total = rows.length;
-        console.log(`[Import] Fetched ${rows.length} airports (filtered to major/standard).`);
+        console.log(`[Import] Fetched ${rows.length} airports (filtered to strict ICAO).`);
 
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
 
-            if (!row.ident || !row.name || !row.latitude_deg || !row.longitude_deg) continue;
+            const ident = (row.ident || '').toUpperCase();
+            const gpsCode = (row.gps_code || '').toUpperCase();
+            const icao = /^[A-Z]{4}$/.test(gpsCode) ? gpsCode : ident; // Row passed filter, so one must be 4-chars
+
+            if (!icao || !row.name || !row.latitude_deg || !row.longitude_deg) continue;
 
             const lat = parseFloat(row.latitude_deg);
             const lon = parseFloat(row.longitude_deg);
@@ -150,20 +200,24 @@ export const importService = {
 
             try {
                 await airportRepo.upsertAirport({
-                    icao: row.ident,
+                    icao,
                     iata: row.iata_code || null,
                     name: row.name,
                     lat,
                     lon,
                     timezone: getTimezone(lat, lon),
-                    type: row.type,
+                    type: row.type || 'small_airport',
                     continent: row.continent,
                     isoCountry: row.iso_country,
                     isoRegion: row.iso_region,
                     municipality: row.municipality,
+                    scheduledService: row.scheduled_service || 'no',
                     gpsCode: row.gps_code,
                     localCode: row.local_code,
                     elevationFt: row.elevation_ft ? parseInt(row.elevation_ft) : null,
+                    homeLink: row.home_link,
+                    wikipediaLink: row.wikipedia_link,
+                    keywords: row.keywords,
                 });
             } catch (e: any) {
                 if (i % 100 === 0) {
@@ -172,7 +226,7 @@ export const importService = {
             }
 
             currentStatus.progress = i + 1;
-            if (i % 100 === 0) {
+            if (i % 500 === 0) {
                 currentStatus.message = `Importing airports: ${i + 1}/${rows.length}`;
                 console.log(`[Import] Airports progress: ${i + 1}/${rows.length}`);
             }
@@ -183,7 +237,7 @@ export const importService = {
     importRunways: async () => {
         currentStatus.step = 'runways';
         currentStatus.message = 'Fetching runways...';
-        console.log('[Import] Phase 3: Importing runways...');
+        console.log('[Import] Phase 4: Importing runways...');
         const response = await fetch(DATA_URLS.runways);
         const csv = await response.text();
 
@@ -192,18 +246,9 @@ export const importService = {
         currentStatus.total = rows.length;
         console.log(`[Import] Fetched ${rows.length} runways.`);
 
-        // Optimization: Get a map of ICAO -> ID
-        // But our airport data is too large to load all at once efficiently in one go maybe?
-        // Let's just do it by ICAO matching if we added ICAO to runways, but we didn't.
-        // We need to find airport by ICAO.
-
-        // Actually, OurAirports runways.csv has airport_ident.
-        // Let's find airports in chunks to speed up.
-
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
 
-            // Validation: skip if required fields are missing
             if (!row.airport_ident || !row.le_ident) continue;
 
             try {

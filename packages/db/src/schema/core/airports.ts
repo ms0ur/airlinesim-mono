@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, timestamp, uniqueIndex, doublePrecision, integer } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, timestamp, uniqueIndex, doublePrecision, integer, text } from 'drizzle-orm/pg-core'
 import { customType } from 'drizzle-orm/pg-core'
 import { SQL, sql } from 'drizzle-orm'
 
@@ -27,9 +27,13 @@ export const airports = pgTable('airports', {
     isoCountry: varchar('iso_country', { length: 2 }),
     isoRegion: varchar('iso_region', { length: 10 }),
     municipality: varchar('municipality', { length: 120 }),
+    scheduledService: varchar('scheduled_service', { length: 10 }).notNull().default('no'),
     gpsCode: varchar('gps_code', { length: 10 }),
     localCode: varchar('local_code', { length: 10 }),
     elevationFt: integer('elevation_ft'),
+    homeLink: text('home_link'),
+    wikipediaLink: text('wikipedia_link'),
+    keywords: text('keywords'),
 
     geog: geography('geog')
         .notNull()
