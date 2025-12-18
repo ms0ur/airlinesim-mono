@@ -33,29 +33,8 @@
     {
       "idx": 4,
       "version": "7",
-      "when": 1765896263103,
-      "tag": "0004_add_uploads_last_accessed",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1765996263103,
-      "tag": "0005_add_airline_resources",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1766096263103,
-      "tag": "0006_add_fuel_prices",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1766078550855,
-      "tag": "0007_flawless_skin",
+      "when": 1766083570378,
+      "tag": "0004_watery_stark_industries",
       "breakpoints": true
     }
   ]
